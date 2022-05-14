@@ -2,6 +2,7 @@ const { Router } = require("express");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const checkUser = require("../../utils/firebaseConfig");
 
 const registerValidationSchema = require("../../middleware/registerValidation");
 
@@ -11,7 +12,7 @@ const router = Router();
 
 const saltRound = 10;
 
-router.post("/", registerValidationSchema, async (req, res) => {
+router.post("/", checkUser, registerValidationSchema, async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -35,7 +36,7 @@ router.post("/", registerValidationSchema, async (req, res) => {
     }
     if (emailExist) {
       return res.status(401).json({
-        message: "Email already exist. Please login",
+        message: "Email already exist. Try another email",
       });
     }
 
