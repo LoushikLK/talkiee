@@ -12,6 +12,9 @@ const registerSchema = new mongoose.Schema({
     unique: true,
     indexes: true,
   },
+  countryCode: {
+    type: String,
+  },
   email: {
     type: String,
     required: true,
