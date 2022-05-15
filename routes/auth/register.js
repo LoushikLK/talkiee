@@ -7,6 +7,7 @@ const checkUser = require("../../utils/firebaseConfig");
 const registerValidationSchema = require("../../middleware/registerValidation");
 
 const registrationModel = require("../../models/register");
+const jwtCreate = require("../../utils/jwtCreate");
 
 const router = Router();
 
@@ -59,16 +60,7 @@ router.post("/", checkUser, registerValidationSchema, async (req, res) => {
     const savedUser = await userData.save();
     // console.log(savedUser);
 
-    const token = await jwt.sign(
-      {
-        id: savedUser._id,
-        name: savedUser.name,
-      },
-      process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: "1m",
-      }
-    );
+    const token = await jwtCreate(savedUser);
 
     res.cookie("authToken", token).status(200).json({
       data: {

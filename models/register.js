@@ -50,6 +50,11 @@ const registerSchema = new mongoose.Schema({
   gender: {
     type: "String",
   },
+  messages: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+    },
+  ],
   createdAt: {
     type: "number",
   },

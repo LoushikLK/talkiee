@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 
 const registrationModel = require("../../models/register");
 const checkUser = require("../../utils/firebaseConfig");
+const jwtCreate = require("../../utils/jwtCreate");
 
 const router = Router();
 
@@ -23,16 +24,7 @@ router.post("/", checkUser, async (req, res) => {
       });
     }
 
-    const token = await jwt.sign(
-      {
-        id: phoneExist._id,
-        name: phoneExist.name,
-      },
-      process.env.JWT_SECRET_KEY,
-      {
-        expiresIn: "1m",
-      }
-    );
+    const token = await jwtCreate(phoneExist);
 
     res.cookie("authToken", token).status(200).json({
       data: {
