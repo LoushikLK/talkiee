@@ -4,6 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const { createServer } = require("http");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 
 dotenv.config();
 
@@ -31,14 +32,17 @@ app.use(express.json({ extended: true, limit: "50mb" }));
 app.use(
   express.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 })
 );
+
+app.use(express.static(path.resolve(__dirname, "./client/build")));
+
 app.use(cookieParser());
 
 // api routes
 app.use("/register", require("./routes/auth/register"));
 app.use("/login", require("./routes/auth/login"));
 
-app.get("/", (req, res) => {
-  res.send("Hello from server");
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "./client/build", "index.html"));
 });
 
 io.use((socket, next) => auth(socket, next));
