@@ -14,6 +14,7 @@ const serverAuth = app.auth();
 
 const checkUser = async (req, res, next) => {
   try {
+    console.log("checking user");
     if (!req.body.idToken) {
       return res.status(401).json({
         message: "No token provided",

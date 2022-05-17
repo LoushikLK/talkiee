@@ -15,12 +15,13 @@ const saltRound = 10;
 
 router.post("/", checkUser, registerValidationSchema, async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res
-        .status(422)
-        .json({ message: errors.array().map((e) => e.msg) });
-    }
+    // console.log("register");
+    // const errors = validationResult(req);
+    // if (!errors.isEmpty()) {
+    //   return res
+    //     .status(422)
+    //     .json({ message: errors.array().map((e) => e.msg) });
+    // }
 
     const { name, phone, email, password, gender, countryCode } = req.body;
 

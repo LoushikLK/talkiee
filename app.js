@@ -40,6 +40,7 @@ app.use(cookieParser());
 // api routes
 app.use("/register", require("./routes/auth/register"));
 app.use("/login", require("./routes/auth/login"));
+app.use("/checkuser", require("./routes/auth/checkUser"));
 
 app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "./client/build", "index.html"));

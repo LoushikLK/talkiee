@@ -17,9 +17,7 @@ const registerValidationSchema = [
   check(
     "phone",
     "Mobile number should contains 10 digits without spaces and + sign or any other sign."
-  )
-    .isMobilePhone()
-    .isString(),
+  ).isString(),
   check("password", "Password length should be 8 to 10 characters")
     .isLength({
       min: 6,
