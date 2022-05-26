@@ -26,6 +26,7 @@ const io = new Server(server, {
     origin: "*",
     methods: ["GET", "POST"],
   },
+  path: "/socket",
 });
 
 app.use(express.json({ extended: true, limit: "50mb" }));
@@ -41,6 +42,7 @@ app.use(cookieParser());
 app.use("/register", require("./routes/auth/register"));
 app.use("/login", require("./routes/auth/login"));
 app.use("/checkuser", require("./routes/auth/checkUser"));
+app.use("/message/private", require("./routes/messages/privateMessage"));
 
 app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "./client/build", "index.html"));

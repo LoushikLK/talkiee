@@ -1,6 +1,4 @@
 const { Router } = require("express");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 
 const registrationModel = require("../../models/register");
 const checkUser = require("../../utils/firebaseConfig");
@@ -25,6 +23,8 @@ router.post("/", checkUser, async (req, res) => {
     }
 
     const token = await jwtCreate(phoneExist);
+
+    // console.log(token);
 
     res.cookie("authToken", token).status(200).json({
       data: {

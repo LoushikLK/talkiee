@@ -24,7 +24,15 @@ const messageSchema = new mongoose.Schema({
 const conversationSchema = new mongoose.Schema({
   participants: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      id: {
+        type: mongoose.Schema.Types.ObjectId,
+      },
+      name: {
+        type: String,
+      },
+      phone: {
+        type: String,
+      },
     },
   ],
   messages: [
@@ -34,4 +42,4 @@ const conversationSchema = new mongoose.Schema({
   ],
 });
 
-module.exports = mongoose.model("Conversation", conversationSchema);
+module.exports = mongoose.model("conversation", conversationSchema);

@@ -1,7 +1,6 @@
 const { Router } = require("express");
 
 const registrationModel = require("../../models/register");
-const jwtCreate = require("../../utils/jwtCreate");
 
 const router = Router();
 

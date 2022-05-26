@@ -51,7 +51,7 @@ const registerSchema = new mongoose.Schema({
     default: "Hey there, I am using ChatApp",
   },
   gender: {
-    type: "String",
+    type: String,
   },
   messages: [
     {
@@ -59,9 +59,9 @@ const registerSchema = new mongoose.Schema({
     },
   ],
   createdAt: {
-    type: "number",
+    type: Number,
   },
-  updatedAt: "Number",
+  updatedAt: Number,
 });
 
 const registerModel = mongoose.model("users", registerSchema);
