@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema({
+  participants: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
+  ],
   sender: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -11,6 +17,7 @@ const messageSchema = new mongoose.Schema({
   },
   message: {
     type: String,
+    required: true,
   },
   createdAt: {
     type: "number",
@@ -21,25 +28,6 @@ const messageSchema = new mongoose.Schema({
   },
 });
 
-const conversationSchema = new mongoose.Schema({
-  participants: [
-    {
-      id: {
-        type: mongoose.Schema.Types.ObjectId,
-      },
-      name: {
-        type: String,
-      },
-      phone: {
-        type: String,
-      },
-    },
-  ],
-  messages: [
-    {
-      type: messageSchema,
-    },
-  ],
-});
+const message = mongoose.model("Message", messageSchema);
 
-module.exports = mongoose.model("conversation", conversationSchema);
+module.exports = message;
