@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+mongoose.set("sanitizeFilter", true);
 
 const url = process.env.MONGO_URI;
 const dbConnect = () => {

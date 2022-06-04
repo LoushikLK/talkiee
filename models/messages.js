@@ -26,6 +26,13 @@ const messageSchema = new mongoose.Schema({
   seen: {
     type: Boolean,
   },
+  delivered: {
+    type: Boolean,
+  },
+});
+
+messageSchema.index({ participants: 1 }).pre("save", function (next) {
+  next();
 });
 
 const message = mongoose.model("Message", messageSchema);

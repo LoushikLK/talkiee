@@ -53,6 +53,11 @@ const registerSchema = new mongoose.Schema({
   gender: {
     type: String,
   },
+  contacts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+    },
+  ],
   messages: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -64,6 +69,11 @@ const registerSchema = new mongoose.Schema({
   updatedAt: Number,
 });
 
-const registerModel = mongoose.model("users", registerSchema);
+registerSchema.pre("save", function (next) {
+  this.createdAt = Date.now();
+  next();
+});
 
-module.exports = registerModel;
+const userModel = mongoose.model("users", registerSchema);
+
+module.exports = userModel;

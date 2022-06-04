@@ -1,6 +1,6 @@
 const { Router } = require("express");
 
-const registrationModel = require("../../models/register");
+const userModel = require("../../models/user");
 const checkUser = require("../../utils/firebaseConfig");
 const jwtCreate = require("../../utils/jwtCreate");
 
@@ -10,7 +10,7 @@ router.post("/", checkUser, async (req, res) => {
   try {
     const { phone } = req.body;
 
-    const phoneExist = await registrationModel.findOne({
+    const phoneExist = await userModel.findOne({
       phone,
     });
 

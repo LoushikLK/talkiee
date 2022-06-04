@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const registrationModel = require("../../models/register");
+const userModel = require("../../models/user");
 const jwtVerify = require("../../utils/jwtVerify");
 const jwtCreate = require("../../utils/jwtCreate");
 
@@ -9,7 +9,7 @@ const auth = async function (socket, next) {
     if (token) {
       const jwtToken = jwtVerify(token);
       if (jwtToken) {
-        const session = await registrationModel.findById(jwtToken.id);
+        const session = await userModel.findById(jwtToken.id);
         if (session) {
           socket.user = {
             name: jwtToken.name,
@@ -34,7 +34,7 @@ const auth = async function (socket, next) {
       return next(new Error("Invalid user"));
     }
 
-    const session = await registrationModel.findById(user.id);
+    const session = await userModel.findById(user.id);
 
     const userObj = {
       name: user.name,

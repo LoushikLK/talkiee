@@ -1,6 +1,6 @@
 const { Router } = require("express");
 
-const registrationModel = require("../../models/register");
+const userModel = require("../../models/user");
 
 const router = Router();
 
@@ -8,7 +8,7 @@ router.post("/", async (req, res) => {
   try {
     const { phone } = req.body;
 
-    const phoneExist = await registrationModel.findOne({
+    const phoneExist = await userModel.findOne({
       phone,
     });
 

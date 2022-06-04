@@ -6,7 +6,7 @@ const checkUser = require("../../utils/firebaseConfig");
 
 const registerValidationSchema = require("../../middleware/registerValidation");
 
-const registrationModel = require("../../models/register");
+const userModel = require("../../models/user");
 const jwtCreate = require("../../utils/jwtCreate");
 
 const router = Router();
@@ -25,10 +25,10 @@ router.post("/", checkUser, registerValidationSchema, async (req, res) => {
 
     const { name, phone, email, password, gender, countryCode } = req.body;
 
-    const phoneExist = await registrationModel.findOne({
+    const phoneExist = await userModel.findOne({
       phone,
     });
-    const emailExist = await registrationModel.findOne({
+    const emailExist = await userModel.findOne({
       email,
     });
     if (phoneExist) {
@@ -44,7 +44,7 @@ router.post("/", checkUser, registerValidationSchema, async (req, res) => {
 
     const hashPassword = await bcrypt.hash(password, saltRound);
 
-    const userData = new registrationModel({
+    const userData = new userModel({
       name,
       phone,
       password: hashPassword,
