@@ -1,6 +1,12 @@
 import { useFormik } from "formik";
 import React from "react";
 import * as Yup from "yup";
+import Lottie from "react-lottie";
+import { registerAnimations } from "assets/animations";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { auth } from "config/firebaseConfig";
+import Swal from "sweetalert2";
+declare var window: any;
 
 const Register = () => {
   const formik = useFormik({
@@ -24,20 +30,76 @@ const Register = () => {
     }),
     enableReinitialize: true,
     onSubmit: async (values) => {
-      console.log(values);
+      try {
+        console.log(values);
+
+        window.captchaVerifier = new RecaptchaVerifier(
+          "recaptcha-container",
+          {
+            size: "normal",
+            callback: (response: any) => {
+              // reCAPTCHA solved, allow signInWithPhoneNumber.
+              // ...
+            },
+            "expired-callback": () => {
+              // Response expired. Ask user to solve reCAPTCHA again.
+              // ...
+            },
+          },
+          auth
+        );
+
+        const appVerifier = window.recaptchaVerifier;
+
+        signInWithPhoneNumber(auth, values.phone, appVerifier)
+          .then((confirmationResult) => {
+            // SMS sent. Prompt user to type the code from the message, then sign the
+            // user in with confirmationResult.confirm(code).
+            window.confirmationResult = confirmationResult;
+
+            Swal.fire({
+              title: "Code Sent",
+              text: "Please enter the code sent to your phone",
+              icon: "success",
+            });
+            // ...
+          })
+          .catch((error) => {
+            // Error; SMS not sent
+            console.log(error);
+            // ...
+          });
+      } catch (error) {
+        console.log(error);
+      }
     },
   });
 
+  console.log(formik.errors);
+
+  const registerOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: registerAnimations,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
+
   return (
     <section className="w-full h-full bg-white dark:bg-gray-900 min-h-screen flex justify-center items-center ">
-      <div className="flex flex-row ">
-        <div className="w-1/2"></div>
+      <div className="flex flex-row w-full items-center container mx-auto p-4 ">
+        <div className="w-1/2 h-full">
+          <div className="flex flex-col items-center justify-center">
+            <Lottie options={registerOptions} height={300} width={300} />
+          </div>
+        </div>
         <div className=" w-1/2">
-          <div className="w-full col-span-12 flex flex-col gap-8 ">
-            <h3 className="text-black font-medium tracking-wide text-lg">
+          <div className="w-full pb-6 flex flex-col gap-8 ">
+            <h3 className="text-black dark:text-white text-4xl tracking-wider  font-medium ">
               Register
             </h3>
-            <h4 className="text-base text-black font-medium">
+            <h4 className=" text-black dark:text-white text-2xl tracking-wider  font-medium">
               Create your account
             </h4>
           </div>
@@ -46,31 +108,171 @@ const Register = () => {
             className="grid grid-cols-12 gap-8 my-8 "
             onSubmit={formik.handleSubmit}
           >
-            <div className="col-span-12 md:col-span-6">
-              <label htmlFor="register-name">Name*</label>
-              <input type="text" name="" id="register-name" />
+            <div className="col-span-12 md:col-span-6 flex flex-col gap-2 ">
+              <label
+                className="text-gray-900 dark:text-white text-base tracking-wider font-medium"
+                htmlFor="register-name"
+              >
+                Name*
+              </label>
+              <span className="flex flex-col gap-1">
+                <input
+                  className="h-10 w-full rounded-md focus:outline focus:outline-blue-500 px-2 border "
+                  type="text"
+                  name="name"
+                  placeholder="Enter your name"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.name}
+                  id="register-name"
+                />
+                <small className="text-red-500 tracking-wide font-medium ml-2">
+                  {formik.touched.name && formik.errors.name}
+                </small>
+              </span>
             </div>
-            <div className="col-span-12 md:col-span-6">
-              <label htmlFor="register-email">Email*</label>
-              <input type="email" name="" id="register-email" />
+            <div className="col-span-12 md:col-span-6 flex flex-col gap-2 ">
+              <label
+                className="text-gray-900 dark:text-white text-base tracking-wider font-medium"
+                htmlFor="register-email"
+              >
+                Email*
+              </label>
+              <span className="flex flex-col gap-1">
+                <input
+                  className="h-10 w-full rounded-md focus:outline focus:outline-blue-500 px-2 border "
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.email}
+                  id="register-email"
+                />
+                <small className="text-red-500 tracking-wide font-medium ml-2">
+                  {formik.touched.email && formik.errors.email}
+                </small>
+              </span>
             </div>
-            <div className="col-span-12 md:col-span-6">
-              <label htmlFor="register-password">Password*</label>
-              <input type="password" name="" id="register-password" />
+            <div className="col-span-12 md:col-span-6 flex flex-col gap-2 ">
+              <label
+                className="text-gray-900 dark:text-white text-base tracking-wider font-medium"
+                htmlFor="register-password"
+              >
+                Password*
+              </label>
+              <span className="flex flex-col gap-1">
+                <input
+                  className="h-10 w-full rounded-md focus:outline focus:outline-blue-500 px-2 border "
+                  type="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  id="register-password"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.password}
+                />
+                <small className="text-red-500 tracking-wide font-medium ml-2">
+                  {formik.touched.password && formik.errors.password}
+                </small>
+              </span>
             </div>
-            <div className="col-span-12 md:col-span-6">
-              <label htmlFor="register-confirm-password">
+            <div className="col-span-12 md:col-span-6 flex flex-col gap-2 ">
+              <label
+                className="text-gray-900 dark:text-white text-base tracking-wider font-medium"
+                htmlFor="register-confirm-password"
+              >
                 Confirm Password*
               </label>
-              <input type="password" name="" id="register-confirm-password" />
+              <span className="flex flex-col gap-1">
+                <input
+                  className="h-10 w-full rounded-md focus:outline focus:outline-blue-500 px-2 border "
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirm your password"
+                  id="register-confirm-password"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.confirmPassword}
+                />
+                <small className="text-red-500 tracking-wide font-medium ml-2">
+                  {formik.touched.confirmPassword &&
+                    formik.errors.confirmPassword}
+                </small>
+              </span>
             </div>
-            <div className="col-span-12 md:col-span-6">
-              <label htmlFor="register-phone">Phone*</label>
-              <input type="number" name="" id="register-phone" />
+            <div className="col-span-12 md:col-span-6 flex flex-col gap-2 ">
+              <label
+                className="text-gray-900 dark:text-white text-base tracking-wider font-medium"
+                htmlFor="register-phone"
+              >
+                Phone*
+              </label>
+              <span className="flex flex-col gap-1">
+                <input
+                  className="h-10 w-full rounded-md focus:outline focus:outline-blue-500 px-2 border "
+                  type="number"
+                  name="phone"
+                  placeholder="Enter your phone number"
+                  id="register-phone"
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values.phone}
+                />
+                <small className="text-red-500 tracking-wide font-medium ml-2">
+                  {formik.touched.phone && formik.errors.phone}
+                </small>
+              </span>
             </div>
-            <div className="col-span-12 md:col-span-6">
-              <label htmlFor="register-gender">Gender*</label>
-              <input type="select" name="" id="register-gender" />
+            <div className="col-span-12 md:col-span-6 flex flex-col gap-2 ">
+              <label
+                className="text-gray-900 dark:text-white text-base tracking-wider font-medium"
+                htmlFor="register-gender"
+              >
+                Gender*
+              </label>
+
+              <span className="flex flex-col gap-1">
+                <select
+                  name="gender"
+                  id="register-gender"
+                  className="h-10 w-full rounded-md focus:outline px-2 focus:outline-blue-500 border "
+                  value={formik.values.gender}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                >
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+
+                <small className="text-red-500 tracking-wide font-medium ml-2">
+                  {formik.touched.gender && formik.errors.gender}
+                </small>
+              </span>
+            </div>
+            <div className="flex items-center gap-1 col-span-12 ">
+              <input
+                className="  rounded-md focus:outline focus:outline-blue-500"
+                type="checkbox"
+                name="terms-agree"
+                id=""
+              />
+
+              <span className="text-black dark:text-white">
+                I agree to the{" "}
+                <a href="/" className="text-blue-500">
+                  Terms and Conditions
+                </a>
+              </span>
+            </div>
+            <div className="w-full">
+              <button
+                type="submit"
+                className="text-white bg-blue-500/90 tracking-wide font-medium text-lg   px-6 py-3 rounded-md  "
+              >
+                Register
+              </button>
             </div>
           </form>
         </div>
