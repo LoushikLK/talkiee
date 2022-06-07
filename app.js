@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const { createServer } = require("http");
 const cookieParser = require("cookie-parser");
 const path = require("path");
+const bodyParser = require("body-parser");
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use(express.json({ extended: true, limit: "50mb" }));
 app.use(
   express.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 })
 );
+app.use(bodyParser.json());
 
 app.use(express.static(path.resolve(__dirname, "./client/build")));
 

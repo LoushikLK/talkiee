@@ -4,3 +4,10 @@
   border-radius: 5px;
   font-size: 3rem !important;
 }
+
+.auth-phone-input .PhoneInput {
+  background-color: #ffffff !important;
+}
+.auth-phone-input .PhoneInputInput:focus {
+  outline: none !important;
+}

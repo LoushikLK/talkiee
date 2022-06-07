@@ -23,7 +23,7 @@ router.post("/", checkUser, registerValidationSchema, async (req, res) => {
     //     .json({ message: errors.array().map((e) => e.msg) });
     // }
 
-    const { name, phone, email, password, gender, countryCode } = req.body;
+    const { name, phone, email, password, gender } = req.body;
 
     const phoneExist = await userModel.findOne({
       phone,
@@ -56,7 +56,6 @@ router.post("/", checkUser, registerValidationSchema, async (req, res) => {
       profileImage: "",
       isOnline: true,
       blocked: [],
-      countryCode,
     });
 
     const savedUser = await userData.save();
