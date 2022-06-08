@@ -23,7 +23,7 @@ router.post("/", async (req, res) => {
     res.status(200).json({
       data: {},
       message: "User exists",
-      error: false,
+      error: "",
     });
   } catch (error) {
     console.log(error);

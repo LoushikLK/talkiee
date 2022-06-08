@@ -13,7 +13,7 @@ const router = Router();
 
 const saltRound = 10;
 
-router.post("/", checkUser, registerValidationSchema, async (req, res) => {
+router.post("/", checkUser, async (req, res) => {
   try {
     // console.log("register");
     // const errors = validationResult(req);

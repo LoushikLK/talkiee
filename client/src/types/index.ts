@@ -1,5 +1,5 @@
 export type User = {
-  id?: string;
+  _id?: string;
   name?: string;
   email?: string;
   profileImage?: string;
@@ -27,4 +27,8 @@ export type Response = {
   data: object;
   error: string | boolean;
   message: string;
+};
+
+export type SELECTOR_TYPE = {
+  userDetail: User;
 };

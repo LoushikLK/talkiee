@@ -7,7 +7,7 @@ import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { auth } from "config/firebaseConfig";
 import Swal from "sweetalert2";
 import PhoneInput from "react-phone-number-input";
-import { registerPath } from "config/path";
+import { checkUserPath, registerPath } from "config/path";
 import { useNavigate } from "react-router-dom";
 
 declare var window: any;
@@ -43,6 +43,28 @@ const Register = () => {
     onSubmit: async (values) => {
       try {
         setLoading(true);
+
+        const serverCheck = await fetch(checkUserPath, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            phone: values.phone,
+          }),
+        });
+
+        if (serverCheck.status === 200) {
+          Swal.fire({
+            title: "Error",
+            text: "Phone number already exists",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+          setLoading(false);
+          return;
+        }
+
         // console.log(values);
 
         window.recaptchaVerifier = new RecaptchaVerifier(
@@ -214,6 +236,8 @@ const Register = () => {
         return;
       }
 
+      console.log(token);
+
       const registerData = {
         idToken: token,
         email: formik.values.email,
@@ -235,17 +259,19 @@ const Register = () => {
 
       const data = await response.json();
 
+      console.log(data);
+
       if (response.status !== 200) {
         Swal.fire({
-          title: "Success",
-          text: data?.error,
-          icon: "success",
+          title: "Error",
+          text: data?.message,
+          icon: "error",
           confirmButtonText: "Ok",
         });
         setLoading(false);
         return;
       }
-
+      localStorage.setItem("authToken", data?.data?.token);
       Swal.fire({
         title: "Success",
         text: data?.message,

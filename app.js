@@ -46,6 +46,7 @@ app.use("/login", require("./routes/auth/login"));
 app.use("/checkuser", require("./routes/auth/checkUser"));
 app.use("/message/private", require("./routes/messages/privateMessage"));
 app.use("/feed", require("./routes/post/postFeed"));
+app.use("/self", require("./routes/user/self"));
 
 app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "./client/build", "index.html"));
