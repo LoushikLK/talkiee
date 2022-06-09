@@ -9,6 +9,8 @@ import Swal from "sweetalert2";
 import PhoneInput from "react-phone-number-input";
 import { checkUserPath, registerPath } from "config/path";
 import { useNavigate } from "react-router-dom";
+import { EyeOff, EyeVisible, Loader } from "assets/icons";
+import { Link } from "react-router-dom";
 
 declare var window: any;
 
@@ -17,6 +19,11 @@ const Register = () => {
   const [otpSent, setOtpSent] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [otpReSent, setOtpResent] = React.useState(false);
+  const [visiblePassword, setVisiblePassword] = React.useState(false);
+  const [visibleConfirmPassword, setVisibleConfirmPassword] =
+    React.useState(false);
+
+  const [agreedToTerms, setAgreedToTerms] = React.useState(false);
 
   const navigate = useNavigate();
 
@@ -31,7 +38,9 @@ const Register = () => {
     },
     validationSchema: Yup.object({
       email: Yup.string().email("Invalid Email").required("Email is required"),
-      password: Yup.string().required("Password is required"),
+      password: Yup.string()
+        .required("Password is required")
+        .min(6, "Password is too short!"),
       confirmPassword: Yup.string()
         .oneOf([Yup.ref("password"), null], "Passwords must match")
         .required("Confirm Password is required"),
@@ -42,6 +51,14 @@ const Register = () => {
     enableReinitialize: true,
     onSubmit: async (values) => {
       try {
+        if (!agreedToTerms) {
+          Swal.fire({
+            title: " Please, Agree to our terms and conditions",
+            icon: "warning",
+          });
+          return;
+        }
+
         setLoading(true);
 
         const serverCheck = await fetch(checkUserPath, {
@@ -119,8 +136,8 @@ const Register = () => {
     },
   });
 
-  console.log(otpSent);
-  console.log(loading);
+  // console.log(otpSent);
+  // console.log(loading);
 
   // console.log(formik.errors);
 
@@ -146,7 +163,7 @@ const Register = () => {
       setLoading(true);
       // console.log(values);
 
-      window.recaptchaVerifier = new RecaptchaVerifier(
+      window.recaptchaVerifierResend = new RecaptchaVerifier(
         "reset-button",
         {
           size: "invisible",
@@ -157,7 +174,7 @@ const Register = () => {
         auth
       );
 
-      const appVerifier = window.recaptchaVerifier;
+      const appVerifier = window.recaptchaVerifierResend;
 
       const confirmationResult = await signInWithPhoneNumber(
         auth,
@@ -236,7 +253,7 @@ const Register = () => {
         return;
       }
 
-      console.log(token);
+      // console.log(token);
 
       const registerData = {
         idToken: token,
@@ -281,14 +298,14 @@ const Register = () => {
 
       navigate("/");
       setLoading(false);
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
 
       setLoading(false);
 
       Swal.fire({
         title: "Error",
-        text: "Something went wrong!",
+        text: "Invalid OTP",
       });
     }
   };
@@ -338,20 +355,27 @@ const Register = () => {
                 </span>
 
                 <button
-                  className="w-full bg-blue-500 text-white py-2 px-4 rounded-md font-medium tracking-wide "
+                  className="w-full bg-blue-500 text-white py-2 px-4  rounded-md font-medium tracking-wide flex items-center gap-4 justify-center "
                   onClick={verifyOtp}
                 >
-                  Verify
+                  {loading ? (
+                    <>
+                      <Loader className="text-2xl animate-spin " />
+                      Loading...
+                    </>
+                  ) : (
+                    "Verify"
+                  )}
                 </button>
 
-                {!otpReSent && (
+                {/* {!otpReSent && (
                   <span
                     className="w-full text-center  text-xs cursor-pointer text-blue-500 tracking-wide"
                     onClick={resendOtp}
                   >
                     Resend OTP
                   </span>
-                )}
+                )} */}
               </div>
             </div>
           </div>
@@ -359,12 +383,12 @@ const Register = () => {
       ) : (
         <section className="w-full h-full bg-white dark:bg-gray-900 min-h-screen flex justify-center items-center ">
           <div className="flex flex-row w-full items-center container mx-auto p-4 ">
-            <div className="w-1/2 h-full">
+            <div className=" hidden lg:block lg:w-1/2 h-full">
               <div className="flex flex-col items-center justify-center">
                 <Lottie options={registerOptions} height={300} width={300} />
               </div>
             </div>
-            <div className=" w-1/2">
+            <div className=" w-full lg:w-1/2">
               <div className="w-full pb-6 flex flex-col gap-8 ">
                 <h3 className="text-black dark:text-white text-4xl tracking-wider  font-medium ">
                   Register
@@ -431,17 +455,27 @@ const Register = () => {
                   >
                     Password*
                   </label>
-                  <span className="flex flex-col gap-1">
-                    <input
-                      className="h-10 w-full rounded-md focus:outline focus:outline-blue-500 px-2 border "
-                      type="password"
-                      name="password"
-                      placeholder="Enter your password"
-                      id="register-password"
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      value={formik.values.password}
-                    />
+                  <span className="flex flex-col gap-1 ">
+                    <span className="relative flex items-center justify-end  ">
+                      <input
+                        className="h-10 w-full rounded-md focus:outline focus:outline-blue-500 px-2 border "
+                        type={visiblePassword ? "text" : "password"}
+                        name="password"
+                        placeholder="Enter your password"
+                        id="register-password"
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        value={formik.values.password}
+                      />
+                      <span
+                        className="absolute cursor-pointer mr-1 "
+                        onClick={() => {
+                          setVisiblePassword(!visiblePassword);
+                        }}
+                      >
+                        {visiblePassword ? <EyeOff /> : <EyeVisible />}
+                      </span>
+                    </span>
                     <small className="text-red-500 tracking-wide font-medium ml-2">
                       {formik.touched.password && formik.errors.password}
                     </small>
@@ -455,16 +489,26 @@ const Register = () => {
                     Confirm Password*
                   </label>
                   <span className="flex flex-col gap-1">
-                    <input
-                      className="h-10 w-full rounded-md focus:outline focus:outline-blue-500 px-2 border "
-                      type="password"
-                      name="confirmPassword"
-                      placeholder="Confirm your password"
-                      id="register-confirm-password"
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                      value={formik.values.confirmPassword}
-                    />
+                    <span className="relative flex items-center justify-end ">
+                      <input
+                        className="h-10 w-full rounded-md focus:outline focus:outline-blue-500 px-2 border "
+                        type={visibleConfirmPassword ? "text" : "password"}
+                        name="confirmPassword"
+                        placeholder="Confirm your password"
+                        id="register-confirm-password"
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        value={formik.values.confirmPassword}
+                      />
+                      <span
+                        className="absolute cursor-pointer mr-1 "
+                        onClick={() => {
+                          setVisibleConfirmPassword(!visibleConfirmPassword);
+                        }}
+                      >
+                        {visibleConfirmPassword ? <EyeOff /> : <EyeVisible />}
+                      </span>
+                    </span>
                     <small className="text-red-500 tracking-wide font-medium ml-2">
                       {formik.touched.confirmPassword &&
                         formik.errors.confirmPassword}
@@ -524,10 +568,13 @@ const Register = () => {
                 </div>
                 <div className="flex items-center gap-1 col-span-12 ">
                   <input
-                    className="  rounded-md focus:outline focus:outline-blue-500"
+                    className="  rounded-md  cursor-pointer "
                     type="checkbox"
                     name="terms-agree"
                     id=""
+                    onClick={() => {
+                      setAgreedToTerms(!agreedToTerms);
+                    }}
                   />
 
                   <span className="text-black dark:text-white">
@@ -540,14 +587,33 @@ const Register = () => {
                 <div className="w-full">
                   <button
                     type="submit"
-                    className="text-white bg-blue-500/90 tracking-wide font-medium text-lg   px-6 py-3 rounded-md  "
+                    className="text-white bg-blue-500/90 tracking-wide font-medium justify-center text-lg flex items-center gap-4 w-44  px-6 py-3 rounded-md hover:bg-blue-700   "
                   >
-                    Register
+                    {loading ? (
+                      <>
+                        <Loader className="text-2xl animate-spin " />
+                        Loading...
+                      </>
+                    ) : (
+                      "Register"
+                    )}
                   </button>
+
                   <div id="sign-in-button"></div>
                   <div id="reset-button"></div>
                 </div>
               </form>
+              <div className="w-full flex items-center">
+                <span className="text-gray-500 text-base">
+                  Already have an account?
+                </span>
+                <Link
+                  to="/login"
+                  className="text-blue-500 text-sm ml-2 cursor-pointer"
+                >
+                  Login
+                </Link>
+              </div>
             </div>
           </div>
         </section>

@@ -28,8 +28,8 @@ function App() {
       // console.log(data);
       if (response.status === 200) {
         dispatch(actionCreators.setUser(data?.data) as any);
-        setLoading(false);
       }
+      setLoading(false);
     };
     getUserDetails();
   }, []);
