@@ -9,9 +9,11 @@ const Layout = ({ children, title = "Talkiee" }: Props) => {
   document.title = title;
   return (
     <>
-      <main className="w-full flex flex-row bg-white dark:bg-gray-900  ">
+      <main className="w-full  flex flex-row bg-white dark:bg-gray-900  ">
         <Navbar />
-        <div className="flex-1 my-4">{children}</div>
+        <section className="flex-1  h-screen overflow-hidden overflow-y-auto ">
+          {children}
+        </section>
       </main>
     </>
   );

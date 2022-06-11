@@ -18,7 +18,7 @@ const Register = () => {
   const [otpValue, setOtpValue] = React.useState("");
   const [otpSent, setOtpSent] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const [otpReSent, setOtpResent] = React.useState(false);
+  // const [otpReSent, setOtpResent] = React.useState(false);
   const [visiblePassword, setVisiblePassword] = React.useState(false);
   const [visibleConfirmPassword, setVisibleConfirmPassword] =
     React.useState(false);
@@ -158,60 +158,60 @@ const Register = () => {
     },
   };
 
-  const resendOtp = async () => {
-    try {
-      setLoading(true);
-      // console.log(values);
+  // const resendOtp = async () => {
+  //   try {
+  //     setLoading(true);
+  //     // console.log(values);
 
-      window.recaptchaVerifierResend = new RecaptchaVerifier(
-        "reset-button",
-        {
-          size: "invisible",
-          callback: () => {
-            // reCAPTCHA solved, allow signInWithPhoneNumber.
-          },
-        },
-        auth
-      );
+  //     window.recaptchaVerifierResend = new RecaptchaVerifier(
+  //       "reset-button",
+  //       {
+  //         size: "invisible",
+  //         callback: () => {
+  //           // reCAPTCHA solved, allow signInWithPhoneNumber.
+  //         },
+  //       },
+  //       auth
+  //     );
 
-      const appVerifier = window.recaptchaVerifierResend;
+  //     const appVerifier = window.recaptchaVerifierResend;
 
-      const confirmationResult = await signInWithPhoneNumber(
-        auth,
-        formik?.values?.phone,
-        appVerifier
-      );
+  //     const confirmationResult = await signInWithPhoneNumber(
+  //       auth,
+  //       formik?.values?.phone,
+  //       appVerifier
+  //     );
 
-      if (!confirmationResult.verificationId) {
-        setLoading(false);
-        Swal.fire({
-          title: "Error",
-          text: "OTP not sent",
-          icon: "error",
-          confirmButtonText: "Ok",
-        });
-        return;
-      }
-      window.confirmationResult = confirmationResult;
+  //     if (!confirmationResult.verificationId) {
+  //       setLoading(false);
+  //       Swal.fire({
+  //         title: "Error",
+  //         text: "OTP not sent",
+  //         icon: "error",
+  //         confirmButtonText: "Ok",
+  //       });
+  //       return;
+  //     }
+  //     window.confirmationResult = confirmationResult;
 
-      Swal.fire({
-        title: `OTP Resent Successful`,
-        text: `Please enter the code sent to phone number ${formik?.values?.phone}`,
-        icon: "success",
-      });
-      setLoading(false);
-      setOtpResent(true);
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
-      Swal.fire({
-        title: "Error",
-        text: "Something went wrong",
-        icon: "error",
-        confirmButtonText: "Ok",
-      });
-    }
-  };
+  //     Swal.fire({
+  //       title: `OTP Resent Successful`,
+  //       text: `Please enter the code sent to phone number ${formik?.values?.phone}`,
+  //       icon: "success",
+  //     });
+  //     setLoading(false);
+  //     setOtpResent(true);
+  //   } catch (error) {
+  //     console.log(error);
+  //     setLoading(false);
+  //     Swal.fire({
+  //       title: "Error",
+  //       text: "Something went wrong",
+  //       icon: "error",
+  //       confirmButtonText: "Ok",
+  //     });
+  //   }
+  // };
 
   const verifyOtp = async () => {
     try {
@@ -608,7 +608,7 @@ const Register = () => {
                   Already have an account?
                 </span>
                 <Link
-                  to="/login"
+                  to="/"
                   className="text-blue-500 text-sm ml-2 cursor-pointer"
                 >
                   Login

@@ -2,3 +2,8 @@ export { default as Home } from "./home/Home";
 export { default as LeftMenu } from "./home/LeftMenu";
 export { default as Login } from "./auth/Login";
 export { default as Register } from "./auth/Register";
+export { default as ForgetPassword } from "./auth/ForgetPassword";
+export { default as Group } from "./groups/Group";
+export { default as Feed } from "./feed/Feed";
+export { default as Profile } from "./profile/Profile";
+export { default as Settings } from "./setting/Setting";

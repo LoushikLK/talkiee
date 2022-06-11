@@ -1,4 +1,3 @@
-import { userSelf } from "config/path";
 import { userActionType } from "store/actionCreator/type";
 import { User } from "types";
 
@@ -24,6 +23,7 @@ const reducer = (state = user, action: userActionType) => {
       ...user,
     };
   } else if (action.type === "SET-USER") {
+    // console.log("running");
     return {
       ...action.payload,
     };
