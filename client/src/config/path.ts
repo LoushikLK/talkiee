@@ -1,7 +1,7 @@
-export const registerPath = "http://localhost:8000/register";
+export const registerPath = "https://talkieeapp.herokuapp.com/register";
 
-export const checkUserPath = "http://localhost:8000/checkUser";
+export const checkUserPath = "https://talkieeapp.herokuapp.com/checkUser";
 
-export const userSelf = "http://localhost:8000/self";
+export const userSelf = "https://talkieeapp.herokuapp.com/self";
 
-export const loginPath = "http://localhost:8000/login";
+export const loginPath = "https://talkieeapp.herokuapp.com/login";

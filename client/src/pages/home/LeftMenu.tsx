@@ -92,7 +92,7 @@ const LeftMenu = () => {
       <div className="h-fit flex flex-col  ">
         {blankArray.map((item, index) => {
           return (
-            <div className="w-full p-4 flex flex-row items-center justify-between gap-2 cursor-pointer border-l-4 border-transparent  hover:border-orange-500 bg-gradient-to-r from-transparent to-transparent hover:from-[#f973162b] hover:to-transparent transition-all ease-in-out duration-300 ">
+            <div className="w-full p-4 flex flex-row items-center justify-between gap-2 cursor-pointer border-l-4 border-transparent  border-b !border-b-gray-200/10 hover:border-orange-500 bg-gradient-to-r from-transparent to-transparent hover:from-[#f973162b] hover:to-transparent transition-all ease-in-out duration-300 ">
               <Avatar src="https://source.unsplash.com/random" />
               <span className="flex flex-row items-center justify-between">
                 <span className="flex flex-col  items-baseline">
