@@ -35,6 +35,7 @@ router.post("/", auth, async (req, res) => {
       message,
       createdAt: Date.now(),
       seen: false,
+      delivered: false,
     });
 
     const messageSent = await newMessage.save();
@@ -70,12 +71,23 @@ router.get("/:userId", auth, async (req, res) => {
 
     // console.log(userId, user);
 
-    const conversation = await conversationModel
-      .find({
-        participants: [user, userId],
-      })
-      .limit(20)
-      .sort({ createdAt: -1 });
+    // const conversation = await conversationModel
+    //   .find({
+
+    //   })
+    //   .limit(20)
+    //   .sort({ createdAt: 1 });
+
+    const conversation = await conversationModel.find({
+      $or: [
+        {
+          participants: [user, userId],
+        },
+        {
+          participants: [userId, user],
+        },
+      ],
+    });
 
     // console.log(conversation);
 
@@ -109,7 +121,7 @@ router.get("/:userId", auth, async (req, res) => {
     res.status(200).json({
       message: "Conversation found",
       data: {
-        message: conversation,
+        messages: conversation,
         user: conversationWithUserDetails,
       },
       error: null,
