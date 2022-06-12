@@ -186,7 +186,7 @@ const ChatSection = () => {
         </span>
       </div>
 
-      <div className="flex flex-col h-max overflow-y-auto left-menu-scroll">
+      <div className="flex flex-col h-max overflow-y-auto left-menu-scroll pb-20 ">
         {messageData?.map((message: any, index) => {
           return (
             <React.Fragment key={index}>
@@ -195,7 +195,15 @@ const ChatSection = () => {
                   className="relative w-full py-4 left-0  gap-4 flex items-start justify-start"
                   ref={focusField}
                 >
-                  <Avatar src=" https://picsum.photos/200/300 " />
+                  <Avatar
+                    src={
+                      messageUser.profileImage
+                        ? messageUser.profileImage
+                        : `https://avatars.dicebear.com/api/${messageUser?.gender?.toLowerCase()}/${
+                            messageUser?.name
+                          }.svg`
+                    }
+                  />
                   <div className="w-full flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <span
@@ -236,7 +244,6 @@ const ChatSection = () => {
             </React.Fragment>
           );
         })}
-        <div className="h-40 w-full"></div>
       </div>
 
       <div className="w-full h-fit flex absolute bottom-0 left-0 items-center justify-between gap-4 bg-white  dark:bg-gray-900 p-4 ">

@@ -1,10 +1,18 @@
 const auth = require("../../middleware/auth");
 const userSchema = require("../../models/user");
 const router = require("express").Router();
+const conversationSchema = require("../../models/messages");
 
 router.get("/", auth, async (req, res) => {
   try {
     const user = req.user.id;
+
+    //get one  unique conversations for the user
+    const conversations = await conversationSchema.find({
+      participants: { $in: [user] },
+    });
+
+    console.log(conversations);
 
     // console.log("get all friends");
 
