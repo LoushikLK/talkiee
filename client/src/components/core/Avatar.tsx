@@ -48,7 +48,7 @@ const Avatar = ({
           loading="lazy"
         />
       ) : (
-        name
+        name?.slice(0, 2)
       )}
     </div>
   );

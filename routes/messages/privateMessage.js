@@ -1,15 +1,22 @@
+const { default: mongoose } = require("mongoose");
 const auth = require("../../middleware/auth");
 const router = require("express").Router();
 const conversationModel = require("../../models/messages");
+const userModel = require("../../models/user");
 
 router.post("/", auth, async (req, res) => {
   try {
-    console.log("post to message");
+    // console.log("post to message");
+
+    // console.log(req.body);
+
     const { to } = req.body;
     const { message } = req.body;
     const user = req.user.id;
 
-    const checkToUser = await conversationModel.findById(to);
+    const checkToUser = await userModel.findById(mongoose.Types.ObjectId(to));
+
+    // console.log(checkToUser);
 
     if (!checkToUser) {
       return res.status(400).json({
@@ -61,14 +68,16 @@ router.get("/:userId", auth, async (req, res) => {
     const { userId } = req.params;
     const user = req.user.id;
 
+    // console.log(userId, user);
+
     const conversation = await conversationModel
       .find({
-        participants: {
-          $all: [user, userId],
-        },
+        participants: [user, userId],
       })
       .limit(20)
-      .populate("participants");
+      .sort({ createdAt: -1 });
+
+    // console.log(conversation);
 
     if (!conversation) {
       return res.status(200).json({
@@ -77,9 +86,32 @@ router.get("/:userId", auth, async (req, res) => {
         error: "Bad Request",
       });
     }
+
+    const conversationWithUser = await userModel.findById(userId);
+
+    if (!conversationWithUser) {
+      return res.status(200).json({
+        message: "No conversation found",
+        data: {},
+        error: "Bad Request",
+      });
+    }
+
+    let conversationWithUserDetails = {
+      name: conversationWithUser.name,
+      profileImage: conversationWithUser.profileImage,
+      _id: conversationWithUser._id,
+      isOnline: conversationWithUser.isOnline,
+      phone: conversationWithUser.phone,
+      gender: conversationWithUser.gender,
+    };
+
     res.status(200).json({
       message: "Conversation found",
-      data: conversation,
+      data: {
+        message: conversation,
+        user: conversationWithUserDetails,
+      },
       error: null,
     });
   } catch (error) {
@@ -87,7 +119,7 @@ router.get("/:userId", auth, async (req, res) => {
     res.status(500).json({
       message: "error",
       data: {},
-      error: error,
+      error: error.message,
     });
   }
 });

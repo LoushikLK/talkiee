@@ -49,7 +49,7 @@ router.post("/", checkUser, async (req, res) => {
       phone,
       password: hashPassword,
       email,
-      gender,
+      gender: gender?.toLowerCase(),
       createdAt: Date.now(),
       updatedAt: Date.now(),
       coverImage: "",
