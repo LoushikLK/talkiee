@@ -33,7 +33,7 @@ const Avatar = ({
           : size === "large"
           ? "h-20 w-20 "
           : "w-8 h-8"
-      } ${className}  rounded-full flex items-center  justify-center overflow-hidden cursor-pointer select-none  font-medium text-white bg-gray-800`}
+      } ${className} min-w-fit min-h-fit rounded-full flex items-center  justify-center overflow-hidden cursor-pointer select-none  font-medium text-white bg-gray-800`}
       onClick={onClick}
       style={{
         backgroundColor: randombg,

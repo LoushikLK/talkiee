@@ -52,12 +52,12 @@ const registerSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    default: "Hey there, I am using ChatApp",
+    default: "Hey there, I am using Talkiee",
   },
   gender: {
     type: String,
   },
-  messages: [
+  conversations: [
     {
       type: mongoose.Schema.Types.ObjectId,
     },

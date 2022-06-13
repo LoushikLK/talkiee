@@ -13,9 +13,10 @@ import { Avatar } from "components/core";
 import { getMessagePath, sendMessagePath } from "config/path";
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import moment from "moment";
+import { SELECTOR_TYPE, User } from "types";
 
 const ChatSection = () => {
   const [messageData, setMessageData] = React.useState([]);
@@ -31,11 +32,15 @@ const ChatSection = () => {
 
   const params = useParams();
 
-  const user = useSelector((state: any) => state.userDetail);
+  const { state }: any = useLocation();
 
-  console.log(user);
+  console.log(state);
 
-  const authToken = localStorage.getItem("authToken");
+  const user: User = useSelector((state: SELECTOR_TYPE) => state.userDetail);
+
+  // console.log(user);
+
+  // const authToken = localStorage.getItem("authToken");
 
   //   console.log(params);
 
@@ -51,10 +56,10 @@ const ChatSection = () => {
 
       const data = {
         message,
-        to: messageUser._id,
       };
+      const authToken = localStorage.getItem("authToken");
 
-      const response = await fetch(sendMessagePath, {
+      const response = await fetch(sendMessagePath + `/${params?.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,6 +83,7 @@ const ChatSection = () => {
     }
 
     const fetchMessage = async () => {
+      const authToken = localStorage.getItem("authToken");
       const response = await fetch(getMessagePath + `/${params.id}`, {
         method: "GET",
         headers: {
@@ -86,13 +92,13 @@ const ChatSection = () => {
         },
       });
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
       if (response.status !== 200) {
         setMessageData([]);
         return;
       }
-      setMessageData(data?.data?.messages);
-      setMessageUser(data?.data?.user);
+      setMessageData(data?.data);
+      setMessageUser(data?.data);
     };
 
     let mounted = true;
@@ -122,10 +128,10 @@ const ChatSection = () => {
           <Avatar
             name="LL"
             src={
-              messageUser.profileImage
-                ? messageUser.profileImage
-                : `https://avatars.dicebear.com/api/${messageUser?.gender?.toLowerCase()}/${
-                    messageUser?.name
+              state?.profileImage
+                ? state?.profileImage
+                : `https://avatars.dicebear.com/api/${state?.gender?.toLowerCase()}/${
+                    state?.name
                   }.svg`
             }
             onClick={() => {
@@ -134,10 +140,10 @@ const ChatSection = () => {
           />
           <span className="flex flex-col gap-1">
             <h3 className="font-medium tracking-wide text-lg text-black dark:text-white ">
-              {messageUser?.name}
+              {state?.name}
             </h3>
             <small className="text-gray-500 tracking-wide">
-              {messageUser?.isOnline ? "Active Now" : "Last Active 2hrs ago"}
+              {state?.isOnline ? "Active Now" : "Last Active 2hrs ago"}
             </small>
           </span>
         </div>
@@ -180,8 +186,8 @@ const ChatSection = () => {
         <span className="text-center text-xs font-medium tracking-wide flex items-center gap-2 bg-gray-900 py-2 px-4 text-yellow-500 rounded-md ">
           <Lock />
           <h3>
-            Message with {messageUser?.name} are end-to-end encrypted. No one
-            can read your messages not even us.
+            Message with {state?.name} are end-to-end encrypted. No one can read
+            your messages not even us.
           </h3>
         </span>
       </div>
@@ -197,10 +203,10 @@ const ChatSection = () => {
                 >
                   <Avatar
                     src={
-                      messageUser.profileImage
-                        ? messageUser.profileImage
-                        : `https://avatars.dicebear.com/api/${messageUser?.gender?.toLowerCase()}/${
-                            messageUser?.name
+                      state?.profileImage
+                        ? state?.profileImage
+                        : `https://avatars.dicebear.com/api/${state?.gender?.toLowerCase()}/${
+                            state?.name
                           }.svg`
                     }
                   />

@@ -14,9 +14,9 @@ const user: User = {
 
 const reducer = (state = user, action: userActionType) => {
   // console.log(token);
-  console.log(action.type);
+  // console.log(action.type);
 
-  console.log(action.payload);
+  // console.log(action.payload);
 
   if (action.type === "USER-DETAIL") {
     return {
