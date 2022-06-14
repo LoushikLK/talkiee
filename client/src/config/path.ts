@@ -11,3 +11,5 @@ export const friendsPath = "http://localhost:8000/friends";
 export const getMessagePath = "http://localhost:8000/message/private";
 
 export const sendMessagePath = "http://localhost:8000/message/private";
+
+export const socketPath = "ws://localhost:8000";

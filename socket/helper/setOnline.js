@@ -1,20 +1,25 @@
-const registrationModel = require("../../models/register");
-const jwt = require("jsonwebtoken");
+const { default: mongoose } = require("mongoose");
+const registrationModel = require("../../models/user");
 
-const setOnline = async (auth, socket) => {
+const setOnline = async (userId, socket) => {
   try {
-    const token = auth;
-    const decoded = await jwt.verify(token, process.env.JWT_SECRET_KEY);
-    if (!decoded) {
-      console.log("Invalid token");
-      return socket.disconnect(true);
+    const user = userId;
+    const userData = await registrationModel.findByIdAndUpdate(
+      mongoose.Types.ObjectId(user),
+      {
+        isOnline: true,
+      },
+      { new: true }
+    );
+    if (!userData) {
+      return false;
     }
-    const { id } = decoded;
-    const updateUser = await registrationModel.findByIdAndUpdate(id, {
-      isOnline: true,
-    });
+
+    return true;
   } catch (error) {
-    // console.log(error);
+    console.log(error);
+
+    console.log("error in setOnline");
     console.log("user is not logged in");
     socket.disconnect(true);
   }

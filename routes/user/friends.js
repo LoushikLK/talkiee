@@ -9,6 +9,10 @@ router.get("/", auth, async (req, res) => {
   try {
     const user = req.user.id;
 
+    // console.log(user);
+
+    // console.log("fetching");
+
     const allConversations = await userSchema
       .findById(user)
       .populate("conversations");
@@ -28,33 +32,52 @@ router.get("/", auth, async (req, res) => {
     const allData = await Promise.all(
       allConversations.conversations.map(async (conversation) => {
         const messages = await messageSchema
-          .find({ conversationId: conversation._id })
-          .populate("sender")
+          .aggregate([
+            {
+              $match: {
+                conversationId: mongoose.Types.ObjectId(conversation._id),
+              },
+            },
+          ])
+          .sort({ createdAt: -1 })
           .limit(1);
 
-        const userData = await userSchema.find({
-          conversations: [conversation._id],
-        });
+        const totalUnseenMessages = await messageSchema
+          .aggregate([
+            {
+              $match: {
+                conversationId: mongoose.Types.ObjectId(conversation._id),
+                sender: { $ne: mongoose.Types.ObjectId(user) },
+                seen: {
+                  $eq: false,
+                },
+              },
+            },
+          ])
+          .count("unseenMessages");
 
-        console.log(`user`, userData);
+        // console.log(`totalUnseenMessages`, totalUnseenMessages);
 
-        let name = userData?.find((user) => user._id !== user)?.name;
-        let _id = userData?.find((user) => user._id !== user)?._id;
-        let profileImage = userData?.find(
-          (user) => user._id !== user
-        )?.profileImage;
-        let phone = userData?.find((user) => user._id !== user)?.phone;
-        let gender = userData?.find((user) => user._id !== user)?.gender;
+        // console.log(messages);
+
+        const userData = await userSchema.aggregate([
+          {
+            $match: {
+              conversations: { $in: [messages[0]?.conversationId] },
+              _id: { $ne: mongoose.Types.ObjectId(user) },
+            },
+          },
+        ]);
 
         return {
           _id: conversation._id,
           message: messages[0],
-          userData: {
-            name,
-            _id,
-            profileImage,
-            phone,
-            gender,
+          unseenMessages: totalUnseenMessages[0]?.unseenMessages || 0,
+          user: {
+            name: userData[0]?.name,
+            profileImage: userData[0]?.profileImage,
+            _id: userData[0]?._id,
+            gender: userData[0]?.gender,
           },
         };
       })

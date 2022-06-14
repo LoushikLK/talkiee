@@ -14,40 +14,20 @@ const auth = async function (socket, next) {
           socket.user = {
             name: jwtToken.name,
             userId: jwtToken.id,
-            email: jwtToken.email,
-            profileImage: jwtToken.profileImage,
           };
-          socket.userId = jwtToken.id;
-          socket.name = jwtToken.name;
           socket.token = token;
           return next();
         } else {
+          console.log("user not found");
           return next(new Error("Invalid session"));
         }
       } else {
+        console.log("invalid token");
         return next(new Error("Invalid token"));
       }
     }
-
-    const user = socket.handshake.auth.user;
-    if (!user) {
-      return next(new Error("Invalid user"));
-    }
-
-    const session = await userModel.findById(user.id);
-
-    const userObj = {
-      name: user.name,
-      id: user.id,
-      email: user.email,
-      profileImage: user.profileImage,
-    };
-
-    socket.user = userObj;
-    socket.name = user.name;
-    socket.userId = user.id;
-    socket.token = jwtCreate(userObj);
-    next();
+    console.log("no token");
+    return next(new Error("No token"));
   } catch (error) {
     next(new Error(error.message));
   }

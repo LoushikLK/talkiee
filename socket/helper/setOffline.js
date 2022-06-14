@@ -1,21 +1,30 @@
-const registrationModel = require("../../models/register");
+const userModel = require("../../models/user");
 const jwt = require("jsonwebtoken");
+const { default: mongoose } = require("mongoose");
 
-const setOffline = async (auth, socket) => {
+const setOffline = async (userId, socket) => {
   try {
-    const token = auth;
-    const decoded = await jwt.verify(token, process.env.JWT_SECRET_KEY);
-    if (!decoded) {
-      console.log("Invalid token");
-      return socket.disconnect(true);
+    console.log("setOffline");
+    const user = userId;
+    const userData = await userModel.findByIdAndUpdate(
+      mongoose.Types.ObjectId(user),
+      {
+        isOnline: false,
+        lastSeen: new Date(),
+      },
+      { new: true }
+    );
+
+    if (!userData) {
+      return false;
     }
-    const { id } = decoded;
-    const updateUser = await registrationModel.findByIdAndUpdate(id, {
-      isOnline: false,
-    });
+    // console.log(`user ${user} is offline`);
+    socket.disconnect(true);
+
+    return true;
   } catch (error) {
     // console.log(error);
-    console.log("user is not logged in");
+    console.log("error in setOffline");
     socket.disconnect(true);
   }
 };

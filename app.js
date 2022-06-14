@@ -1,5 +1,5 @@
 const express = require("express");
-const { Server } = require("socket.io");
+const socketIo = require("socket.io");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const { createServer } = require("http");
@@ -12,6 +12,8 @@ dotenv.config();
 const auth = require("./socket/auth/auth");
 //import mongodb server and connect to it
 const dbConnect = require("./db/connectDb");
+const setOnline = require("./socket/helper/setOnline");
+const setOffline = require("./socket/helper/setOffline");
 
 //mongo db connection
 dbConnect();
@@ -22,12 +24,11 @@ const app = express();
 const server = createServer(app);
 app.use(cors());
 
-const io = new Server(server, {
+const io = socketIo(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
   },
-  path: "/socket",
 });
 
 app.use(express.json({ extended: true, limit: "50mb" }));
@@ -53,25 +54,47 @@ app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "./client/build", "index.html"));
 });
 
-io.use((socket, next) => auth(socket, next));
+// io.use((socket, next) => auth(socket, next));
 
 let socket = null;
+
+const users = [];
 
 io.on("connection", (socketObj) => {
   socket = socketObj;
 
-  console.log(socket.id);
+  // console.log(users);
+  socket.on("user-online", (userId) => {
+    // console.log(`user ${userId} is online`);
+    setOnline(userId, socket);
 
-  console.log(socket.handshake.auth);
+    if (!users?.includes(userId)) {
+      users.push({
+        userId,
+        socketId: socket.id,
+      });
+    }
+  });
 
-  console.log("a user connected");
+  socket.on("join-room", (userId) => {
+    socket.join(userId);
+    console.log(`room ${userId} joined`);
+  });
+
+  socket.on("send-message", (data) => {
+    console.log(data);
+    socket.to(data?.conversationId).emit("receive-message", data);
+  });
 
   socket.on("disconnect", async () => {
+    users?.forEach((user) => {
+      if (user.socketId === socket.id) {
+        setOffline(user.userId, socket);
+        users.splice(users.indexOf(user), 1);
+      }
+    });
     socket.disconnect();
-
-    // await setOffline(socket.handshake.auth.token, socket);
-
-    console.log("user disconnected");
+    console.log("disconnected");
   });
 });
 

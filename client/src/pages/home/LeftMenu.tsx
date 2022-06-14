@@ -10,10 +10,12 @@ import { SELECTOR_TYPE, User } from "types";
 const LeftMenu = () => {
   const [userFriend, setUserFriend] = useState([]);
   const [activeChat, setActiveChat] = useState("");
-
+  const [totalUnseenMessage, setTotalUnseenMessage] = useState(0);
   const navigate = useNavigate();
 
   const user: User = useSelector((state: SELECTOR_TYPE) => state.userDetail);
+
+  // console.log(user);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,12 +28,14 @@ const LeftMenu = () => {
         },
       });
       const data = await result.json();
-      // console.log(data);
+      console.log(data);
       if (result.status !== 200) {
         setUserFriend([]);
         return;
       }
       setUserFriend(data.data);
+
+      // console.log(data.data);
     };
     fetchData();
   }, []);
@@ -41,10 +45,10 @@ const LeftMenu = () => {
       console.log(item);
       navigate(`/message/${item?._id}`, {
         state: {
-          name: item?.userData?.name,
-          profileImage: item?.userData?.profileImage,
-          _id: item?.userData?._id,
-          gender: item?.userData?.gender,
+          name: item?.user?.name,
+          profileImage: item?.user?.profileImage,
+          _id: item?.user?._id,
+          gender: item?.user?.gender,
         },
       });
     } catch (error) {
@@ -52,7 +56,24 @@ const LeftMenu = () => {
     }
   };
 
-  console.log(userFriend);
+  useEffect(() => {
+    if (userFriend?.length === 0) {
+      return;
+    }
+
+    let mounted = true;
+
+    if (mounted) {
+      const totalCount = userFriend.reduce((acc: any, curr: any) => {
+        return acc + curr?.unseenMessages;
+      }, 0);
+
+      // console.log(totalCount);
+
+      setTotalUnseenMessage(totalCount);
+    }
+  }, [userFriend]);
+  // console.log(userFriend);
 
   return (
     <div className="w-[25rem] relative h-screen overflow-hidden overflow-y-auto bg-white dark:bg-gray-900 flex-col left-menu-scroll flex gap-2">
@@ -62,7 +83,7 @@ const LeftMenu = () => {
             Messages
           </h3>
           <span className="bg-pink-500 text-xs flex items-center justify-center  text-black dark:text-white text-center font-normal rounded-full h-5 w-5 ">
-            10
+            {totalUnseenMessage}
           </span>
         </span>
         <span className="text-black dark:text-white cursor-pointer p-2 bg-gray-200/20 rounded-full">
@@ -86,14 +107,14 @@ const LeftMenu = () => {
             >
               <div className="">
                 <Avatar
-                  src={item?.userData?.profileImage}
-                  name={item?.userData?.name}
+                  src={item?.user?.profileImage}
+                  name={item?.user?.name}
                 />
               </div>
               <div className="flex flex-row items-center justify-between w-full ">
                 <span className="flex flex-col  items-baseline">
                   <h3 className="text-black dark:text-white font-medium text-base tracking-wide">
-                    {item?.userData?.name}
+                    {item?.user?.name}
                   </h3>
                   <small
                     className={`text-black dark:text-gray-50/80 ${
@@ -109,9 +130,11 @@ const LeftMenu = () => {
                   <small className="text-black text-[12px] dark:text-white">
                     {moment(item?.message?.createdAt).fromNow()}
                   </small>
-                  <span className="bg-pink-500 text-[12px] flex items-center justify-center  text-black dark:text-white text-center font-normal rounded-full h-6 w-6 ">
-                    10
-                  </span>
+                  {item?.unseenMessages > 0 && (
+                    <span className="bg-pink-500 text-[12px] flex items-center justify-center  text-black dark:text-white text-center font-normal rounded-full h-6 w-6 ">
+                      {item?.unseenMessages}
+                    </span>
+                  )}
                 </span>
               </div>
             </div>

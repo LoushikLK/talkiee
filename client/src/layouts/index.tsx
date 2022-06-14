@@ -1,3 +1,4 @@
+import SocketContextProvider from "config/SocketContextProvider";
 import React from "react";
 import Navbar from "./Navbar";
 

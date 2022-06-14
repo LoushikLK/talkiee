@@ -3,46 +3,56 @@ import {
   Call,
   Check,
   Lock,
-  Mic,
   Send,
   SmileyFace,
   ThreeDots,
   VideoCall,
 } from "assets/icons";
 import { Avatar } from "components/core";
-import { getMessagePath, sendMessagePath } from "config/path";
+import { getMessagePath, sendMessagePath, socketPath } from "config/path";
 import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import moment from "moment";
 import { SELECTOR_TYPE, User } from "types";
 
+import { v4 } from "uuid";
+import { useSocketContext } from "config/SocketContextProvider";
+import { io } from "socket.io-client";
+
 const ChatSection = () => {
-  const [messageData, setMessageData] = React.useState([]);
+  const [messageData, setMessageData] = React.useState<any[]>([]);
 
-  const [messageUser, setMessageUser] = React.useState({
-    _id: "",
-    isOnline: false,
-    name: "",
-    phone: "",
-    profileImage: "",
-    gender: "",
-  });
-
-  const params = useParams();
-
-  const { state }: any = useLocation();
-
-  console.log(state);
+  const socket = useRef<any>();
 
   const user: User = useSelector((state: SELECTOR_TYPE) => state.userDetail);
 
-  // console.log(user);
+  const params = useParams();
 
-  // const authToken = localStorage.getItem("authToken");
+  console.log(params?.id);
 
-  //   console.log(params);
+  const { state }: any = useLocation();
+
+  useEffect(() => {
+    if (!user?._id) {
+      return;
+    }
+    socket.current = io(socketPath);
+    socket?.current.on("connect", () => {
+      socket?.current.emit("user-online", user?._id);
+      socket?.current?.emit("join-room", params?.id);
+    });
+    socket?.current?.on("receive-message", (data: any) => {
+      console.log(data);
+      setMessageData((prevState: any) => [...prevState, data]);
+    });
+    socket?.current?.on("disconnect", () => {
+      socket?.current?.emit("user-offline", user?._id);
+    });
+  }, [params?.id]);
+
+  // console.log(socket);
 
   const [message, setMessage] = React.useState("");
 
@@ -57,6 +67,34 @@ const ChatSection = () => {
       const data = {
         message,
       };
+
+      setMessageData((prevState) => {
+        return [
+          ...prevState,
+          {
+            message: message,
+            userId: user?._id,
+            conversationId: params?.id,
+            receiver: state?._id,
+            sender: user?._id,
+            seen: false,
+            createdAt: Date.now(),
+            _id: v4(),
+          },
+        ];
+      });
+
+      socket?.current?.emit("send-message", {
+        message: message,
+        userId: user?._id,
+        conversationId: params?.id,
+        receiver: state?._id,
+        sender: user?._id,
+        seen: false,
+        createdAt: Date.now(),
+        _id: v4(),
+      });
+
       const authToken = localStorage.getItem("authToken");
 
       const response = await fetch(sendMessagePath + `/${params?.id}`, {
@@ -69,12 +107,14 @@ const ChatSection = () => {
       });
 
       const result = await response.json();
-      console.log(result);
+      // console.log(result);
       setMessage("");
     } catch (error) {
       console.log(error);
     }
   };
+
+  // console.log(messageData[messageData?.length - 1]);
 
   useEffect(() => {
     if (!params.id) {
@@ -97,8 +137,7 @@ const ChatSection = () => {
         setMessageData([]);
         return;
       }
-      setMessageData(data?.data);
-      setMessageUser(data?.data);
+      setMessageData(data?.data?.reverse());
     };
 
     let mounted = true;
@@ -118,7 +157,7 @@ const ChatSection = () => {
     }
   }, [messageData]);
 
-  console.log(messageData);
+  // console.log(messageData);
   return (
     <div
       className={`w-full flex flex-col message-box-chat  px-4 pt-4 relative `}

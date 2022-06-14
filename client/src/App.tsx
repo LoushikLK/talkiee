@@ -8,6 +8,8 @@ import "react-phone-number-input/style.css";
 import "./App.css";
 import Lottie from "react-lottie";
 import { loadingAnimations } from "assets/animations";
+import SocketContextProvider from "config/SocketContextProvider";
+
 function App() {
   const [loading, setLoading] = useState(true);
 
