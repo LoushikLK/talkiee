@@ -15,6 +15,8 @@ const setOnline = async (userId, socket) => {
       return false;
     }
 
+    console.log(userData?.name + " is online");
+
     return true;
   } catch (error) {
     console.log(error);

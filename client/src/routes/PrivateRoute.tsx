@@ -1,4 +1,4 @@
-import { Feed, Group, Home, Message, Profile, Settings } from "pages";
+import { Feed, Group, Home, Profile, Settings } from "pages";
 import { Route, Routes } from "react-router-dom";
 import Layout from "../layouts";
 
@@ -13,14 +13,7 @@ const PrivateRoute = () => {
           </Layout>
         }
       />
-      <Route
-        path="/message/:id"
-        element={
-          <Layout>
-            <Message />
-          </Layout>
-        }
-      />
+
       <Route
         path="/groups"
         element={

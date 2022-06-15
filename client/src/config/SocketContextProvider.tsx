@@ -17,10 +17,19 @@ const SocketContextProvider = ({ children }: any) => {
       return;
     }
     socket.current = io(socketPath);
-    socket.current.on("connect", () => {
-      socket.current.emit("user-online", user?._id);
+    socket?.current.on("connect", () => {
+      socket?.current.emit("user-online", user?._id);
+
+      console.log(socket?.current.id);
+      // socket?.current?.emit("join-room", params?.id);
     });
-  }, []);
+  }, [user?._id]);
+
+  useEffect(() => {
+    socket?.current?.on("disconnect", () => {
+      socket?.current?.emit("user-offline", user?._id);
+    });
+  }, [user?._id]);
 
   return (
     <SocketContext.Provider value={{ socket }}>

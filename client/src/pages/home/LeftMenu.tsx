@@ -1,17 +1,23 @@
 import { Search } from "assets/icons";
 import { Avatar } from "components/core";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { friendsPath } from "config/path";
 import moment from "moment";
 import { useSelector } from "react-redux";
 import { SELECTOR_TYPE, User } from "types";
 
-const LeftMenu = () => {
+const LeftMenu = ({
+  setConversationId,
+  setReceiverId,
+  socket,
+}: {
+  setConversationId: (id: string) => void;
+  setReceiverId: (id: string) => void;
+  socket: any;
+}) => {
   const [userFriend, setUserFriend] = useState([]);
   const [activeChat, setActiveChat] = useState("");
   const [totalUnseenMessage, setTotalUnseenMessage] = useState(0);
-  const navigate = useNavigate();
 
   const user: User = useSelector((state: SELECTOR_TYPE) => state.userDetail);
 
@@ -28,7 +34,7 @@ const LeftMenu = () => {
         },
       });
       const data = await result.json();
-      console.log(data);
+      // console.log(data);
       if (result.status !== 200) {
         setUserFriend([]);
         return;
@@ -40,20 +46,8 @@ const LeftMenu = () => {
     fetchData();
   }, []);
 
-  const handleNavigation = (item: any) => {
-    try {
-      console.log(item);
-      navigate(`/message/${item?._id}`, {
-        state: {
-          name: item?.user?.name,
-          profileImage: item?.user?.profileImage,
-          _id: item?.user?._id,
-          gender: item?.user?.gender,
-        },
-      });
-    } catch (error) {
-      console.log(error);
-    }
+  const handleRoomJoin = (id: string) => {
+    socket?.current?.emit("join-room", id);
   };
 
   useEffect(() => {
@@ -101,7 +95,9 @@ const LeftMenu = () => {
               } w-full p-4 flex flex-row items-center  gap-2 cursor-pointer border-l-4 border-transparent  border-b !border-b-gray-200/10 hover:border-orange-500 bg-gradient-to-r from-transparent to-transparent hover:from-[#f973162b] hover:to-transparent transition-all ease-in-out duration-300 `}
               key={item?._id}
               onClick={() => {
-                handleNavigation(item);
+                setConversationId(item?._id);
+                setReceiverId(item?.user?._id);
+                handleRoomJoin(item?._id);
                 setActiveChat(item?._id);
               }}
             >

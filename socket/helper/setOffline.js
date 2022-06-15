@@ -4,7 +4,6 @@ const { default: mongoose } = require("mongoose");
 
 const setOffline = async (userId, socket) => {
   try {
-    console.log("setOffline");
     const user = userId;
     const userData = await userModel.findByIdAndUpdate(
       mongoose.Types.ObjectId(user),
@@ -20,6 +19,8 @@ const setOffline = async (userId, socket) => {
     }
     // console.log(`user ${user} is offline`);
     socket.disconnect(true);
+
+    console.log(userData?.name + " is offline");
 
     return true;
   } catch (error) {

@@ -14,6 +14,7 @@ const auth = require("./socket/auth/auth");
 const dbConnect = require("./db/connectDb");
 const setOnline = require("./socket/helper/setOnline");
 const setOffline = require("./socket/helper/setOffline");
+const getUserDetails = require("./socket/helper/getUserDetails");
 
 //mongo db connection
 dbConnect();
@@ -58,39 +59,38 @@ app.get("*", (req, res) => {
 
 let socket = null;
 
-const users = [];
+let onlineUsers = new Map();
 
 io.on("connection", (socketObj) => {
   socket = socketObj;
-
-  // console.log(users);
   socket.on("user-online", (userId) => {
-    // console.log(`user ${userId} is online`);
     setOnline(userId, socket);
-
-    if (!users?.includes(userId)) {
-      users.push({
-        userId,
-        socketId: socket.id,
-      });
-    }
-  });
-
-  socket.on("join-room", (userId) => {
-    socket.join(userId);
-    console.log(`room ${userId} joined`);
+    onlineUsers.set(userId, socket.id);
+    socket.emit("user-online", userId);
   });
 
   socket.on("send-message", (data) => {
-    console.log(data);
-    socket.to(data?.conversationId).emit("receive-message", data);
+    const sendUserSocket = onlineUsers.get(data.receiver);
+    console.log(sendUserSocket);
+    if (sendUserSocket) {
+      socket.to(sendUserSocket).emit("message-receive", data);
+    }
+  });
+
+  socket.on("get-user-data", async (data) => {
+    console.log("socket-id: " + socket.client.id);
+    await getUserDetails(socket, data);
   });
 
   socket.on("disconnect", async () => {
-    users?.forEach((user) => {
-      if (user.socketId === socket.id) {
-        setOffline(user.userId, socket);
-        users.splice(users.indexOf(user), 1);
+    console.log("user disconnected", socket.id);
+
+    // console.log(onlineUsers);
+    onlineUsers.forEach((value, key) => {
+      if (value === socket.id) {
+        setOffline(key, socket);
+        onlineUsers.delete(key);
+        socket.emit("user-offline", key);
       }
     });
     socket.disconnect();

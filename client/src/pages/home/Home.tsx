@@ -1,29 +1,60 @@
-import Lottie from "react-lottie";
 import LeftMenu from "./LeftMenu";
-import { newMessageAnimation } from "assets/animations";
+import { io } from "socket.io-client";
+import { useEffect, useRef, useState } from "react";
+import { User } from "types";
+import { useSelector } from "react-redux";
+import { socketPath } from "config/path";
+import ChatSection from "./ChatSection";
 
 const Home = () => {
-  const newMessageOption = {
-    loop: true,
-    autoplay: true,
-    animationData: newMessageAnimation,
-    rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice",
-    },
-  };
+  const [conversationId, setConversationId] = useState("");
+  const [receiverId, setReceiverId] = useState("");
+  const [activeUser, setActiveUser] = useState("");
+  const user: User = useSelector((state: any) => state.userDetail);
+
+  const socket = useRef(io(socketPath));
+
+  useEffect(() => {
+    socket?.current?.on("connect", () => {
+      if (!user?._id) {
+        return;
+      }
+      socket?.current.emit("user-online", user?._id);
+    });
+  }, [user?._id]);
+
+  console.log(socket?.current?.id);
+
+  useEffect(() => {
+    socket?.current?.on("user-online", (data: any) => {
+      // console.log(data);
+      setActiveUser(data);
+    });
+    socket?.current?.on("user-details", (data: any) => {
+      console.log("user-details", data);
+    });
+  }, [socket]);
+
+  useEffect(() => {
+    if (receiverId) {
+      socket?.current?.emit("get-user-data", receiverId);
+    }
+  }, [receiverId]);
 
   return (
     <section className="bg-white dark:bg-gray-900 flex-row flex h-screen overflow-hidden ">
-      <LeftMenu />
-      <div className="w-full flex flex-col  bg-white dark:bg-slate-700 px-4 pt-4 relative items-center justify-center ">
-        <span className="w-fit h-fit flex items-center gap-4  flex-col">
-          <Lottie options={newMessageOption} height={350} width={350} />
-          <small className="text-white tracking-wide text-center">
-            Send and receive messages by clicking on the person you want to chat
-            with or by clicking on the plus icon in the top right corner.
-          </small>
-        </span>
-      </div>
+      <LeftMenu
+        setConversationId={setConversationId}
+        setReceiverId={setReceiverId}
+        socket={socket}
+      />
+
+      <ChatSection
+        socket={socket}
+        conversationId={conversationId}
+        receiverId={receiverId}
+        activeUser={activeUser}
+      />
     </section>
   );
 };
