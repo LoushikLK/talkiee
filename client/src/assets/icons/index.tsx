@@ -342,6 +342,116 @@ function Check(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   );
 }
 
+function ArrowLeft(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      stroke="currentColor"
+      fill="currentColor"
+      strokeWidth={0}
+      viewBox="0 0 16 16"
+      height="1em"
+      width="1em"
+      {...props}
+    >
+      <path
+        fillRule="evenodd"
+        d="M5.854 4.646a.5.5 0 010 .708L3.207 8l2.647 2.646a.5.5 0 01-.708.708l-3-3a.5.5 0 010-.708l3-3a.5.5 0 01.708 0z"
+        clipRule="evenodd"
+      />
+      <path
+        fillRule="evenodd"
+        d="M2.5 8a.5.5 0 01.5-.5h10.5a.5.5 0 010 1H3a.5.5 0 01-.5-.5z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+function Close(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      stroke="currentColor"
+      fill="currentColor"
+      strokeWidth={0}
+      viewBox="0 0 24 24"
+      height="1em"
+      width="1em"
+      {...props}
+    >
+      <path
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth={2}
+        d="M3,3 L21,21 M3,21 L21,3"
+      />
+    </svg>
+  );
+}
+
+function Pause(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      stroke="currentColor"
+      fill="currentColor"
+      strokeWidth={0}
+      viewBox="0 0 16 16"
+      height="1em"
+      width="1em"
+      {...props}
+    >
+      <path d="M5.5 3.5A1.5 1.5 0 017 5v6a1.5 1.5 0 01-3 0V5a1.5 1.5 0 011.5-1.5zm5 0A1.5 1.5 0 0112 5v6a1.5 1.5 0 01-3 0V5a1.5 1.5 0 011.5-1.5z" />
+    </svg>
+  );
+}
+
+function Speaker(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      stroke="currentColor"
+      fill="currentColor"
+      strokeWidth={0}
+      viewBox="0 0 512 512"
+      height="1em"
+      width="1em"
+      {...props}
+    >
+      <path d="M275.5 96l-96 96h-96v128h96l96 96V96zm51.46 27.668l-4.66 17.387c52.066 13.95 88.2 61.04 88.2 114.945 0 53.904-36.134 100.994-88.2 114.945l4.66 17.387C386.81 372.295 428.5 317.962 428.5 256c0-61.963-41.69-116.295-101.54-132.332zm-12.425 46.365l-4.658 17.387C340.96 195.748 362.5 223.822 362.5 256s-21.54 60.252-52.623 68.58l4.658 17.387C353.402 331.552 380.5 296.237 380.5 256c0-40.238-27.098-75.552-65.965-85.967zm-12.424 46.363l-4.657 17.387C307.55 236.49 314.5 245.547 314.5 256s-6.95 19.51-17.047 22.217l4.658 17.387c17.884-4.792 30.39-21.09 30.39-39.604 0-18.513-12.506-34.812-30.39-39.604z" />
+    </svg>
+  );
+}
+
+function SpeakerOff(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      stroke="currentColor"
+      fill="currentColor"
+      strokeWidth={0}
+      viewBox="0 0 512 512"
+      height="1em"
+      width="1em"
+      {...props}
+    >
+      <path d="M275.5 96l-96 96h-96v128h96l96 96V96zm50.863 89.637l-12.726 12.726L371.273 256l-57.636 57.637 12.726 12.726L384 268.727l57.637 57.636 12.726-12.726L396.727 256l57.636-57.637-12.726-12.726L384 243.273l-57.637-57.636z" />
+    </svg>
+  );
+}
+
+function Play(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      stroke="currentColor"
+      fill="currentColor"
+      strokeWidth={0}
+      viewBox="0 0 16 16"
+      height="1em"
+      width="1em"
+      {...props}
+    >
+      <path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 010 1.393z" />
+    </svg>
+  );
+}
+
 export {
   Chat,
   Group,
@@ -361,4 +471,10 @@ export {
   Lock,
   SmileyFace,
   Check,
+  ArrowLeft,
+  Close,
+  Pause,
+  Play,
+  Speaker,
+  SpeakerOff,
 };

@@ -1,4 +1,6 @@
 import { Feed, Group, Home, Profile, Settings } from "pages";
+import View from "pages/feed/View";
+
 import { Route, Routes } from "react-router-dom";
 import Layout from "../layouts";
 
@@ -30,6 +32,7 @@ const PrivateRoute = () => {
           </Layout>
         }
       />
+      <Route path="/status/view/:id" element={<View />} />
       <Route
         path="/profile"
         element={

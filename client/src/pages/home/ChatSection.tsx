@@ -18,6 +18,7 @@ import { SELECTOR_TYPE, User } from "types";
 import { v4 } from "uuid";
 import { newMessageAnimation } from "assets/animations";
 import Lottie from "react-lottie";
+import Picker from "emoji-picker-react";
 
 type Props = {
   socket: any;
@@ -44,10 +45,16 @@ const ChatSection = ({
   const [messageData, setMessageData] = React.useState<any[]>([]);
   const [message, setMessage] = React.useState("");
   const [arrivalMessage, setArrivalMessage] = React.useState<any>(null);
+  const [showEmoji, setShowEmoji] = React.useState(false);
 
   const user: User = useSelector((state: SELECTOR_TYPE) => state.userDetail);
 
   const focusField = useRef<HTMLInputElement>(null);
+
+  const emojiContainer = useRef<any>(null);
+  const emojiButtonRef = useRef<any>(null);
+
+  console.log(showEmoji);
 
   useEffect(() => {
     if (socket?.current) {
@@ -288,9 +295,35 @@ const ChatSection = ({
             })}
           </div>
 
-          <div className="w-full h-fit flex absolute bottom-0 left-0 items-center justify-between gap-4 bg-white  dark:bg-gray-900 p-4 ">
-            <div className="flex w-full items-center border p-2 rounded-full  ">
-              <SmileyFace className="text-gray-500 text-2xl cursor-pointer " />
+          <div className="w-full h-fit flex absolute bottom-0 left-0 items-center justify-between gap-4 bg-white  dark:bg-gray-900 p-4    z-10  ">
+            <div
+              className="flex w-full items-center border p-2 rounded-full "
+              ref={emojiContainer}
+            >
+              {showEmoji && (
+                <span
+                  className="absolute top-full left-0 w-full h-4 z-10
+                 "
+                >
+                  <Picker
+                    onEmojiClick={(e: any, emoji: any) => {
+                      setMessage((prev: any) => {
+                        return prev + emoji.emoji;
+                      });
+                    }}
+                    pickerStyle={{ width: "100%" }}
+                  />
+                </span>
+              )}
+
+              <SmileyFace
+                ref={emojiButtonRef}
+                className="text-gray-500 text-2xl cursor-pointer relative z-10 "
+                onClick={() => {
+                  setShowEmoji(!showEmoji);
+                }}
+              />
+
               <input
                 type="text"
                 placeholder="Type a message..."
