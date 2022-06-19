@@ -1,21 +1,20 @@
 const mongoose = require("mongoose");
 
-const messageSchema = new mongoose.Schema(
+const groupMessageSchema = new mongoose.Schema(
   {
     conversationId: {
       type: mongoose.Schema.Types.ObjectId,
     },
     sender: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
     },
-    receiver: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-    },
+    seen: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
     message: {
       type: String,
-      required: true,
     },
     react: [
       {
@@ -31,11 +30,9 @@ const messageSchema = new mongoose.Schema(
       type: "number",
       default: Date.now(),
     },
-    seen: {
-      type: Boolean,
-    },
-    delivered: {
-      type: Boolean,
+    updatedAt: {
+      type: "number",
+      default: Date.now(),
     },
   },
   {
@@ -43,10 +40,6 @@ const messageSchema = new mongoose.Schema(
   }
 );
 
-messageSchema.index({ timestamps: 1 }).pre("save", function (next) {
-  next();
-});
+const groupMessage = mongoose.model("groupMessage", groupMessageSchema);
 
-const message = mongoose.model("message", messageSchema);
-
-module.exports = message;
+module.exports = groupMessage;
