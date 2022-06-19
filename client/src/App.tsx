@@ -46,7 +46,7 @@ function App() {
   };
 
   return (
-    <>
+    <SocketContextProvider>
       {loading ? (
         <div className="w-full min-h-screen h-full flex items-center justify-center">
           <Lottie options={loadingAnimationOption} height={350} width={350} />
@@ -56,7 +56,7 @@ function App() {
       ) : (
         <PublicRoutes />
       )}
-    </>
+    </SocketContextProvider>
   );
 }
 

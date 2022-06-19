@@ -23,15 +23,15 @@ import Picker from "emoji-picker-react";
 type Props = {
   socket: any;
   conversationId?: string;
-  receiverId?: string;
-  activeUser?: string;
+  setArrivalMessage: (message: any) => void;
+  receiverUser?: any;
 };
 
 const ChatSection = ({
   socket,
   conversationId,
-  receiverId,
-  activeUser,
+  receiverUser,
+  setArrivalMessage,
 }: Props) => {
   const newMessageOption = {
     loop: true,
@@ -44,8 +44,10 @@ const ChatSection = ({
 
   const [messageData, setMessageData] = React.useState<any[]>([]);
   const [message, setMessage] = React.useState("");
-  const [arrivalMessage, setArrivalMessage] = React.useState<any>(null);
   const [showEmoji, setShowEmoji] = React.useState(false);
+  const [receiverData, setReceiverData] = React.useState<any>(null);
+  const [receiverOnline, setReceiverOnline] = React.useState(false);
+  const [upcomingMessage, setUpcomingMessage] = React.useState<any>(null);
 
   const user: User = useSelector((state: SELECTOR_TYPE) => state.userDetail);
 
@@ -54,25 +56,25 @@ const ChatSection = ({
   const emojiContainer = useRef<any>(null);
   const emojiButtonRef = useRef<any>(null);
 
-  console.log(showEmoji);
-
   useEffect(() => {
     if (socket?.current) {
       socket.current.on("message-receive", (data: any) => {
-        setArrivalMessage(data);
+        setUpcomingMessage(data);
       });
     }
   }, [socket]);
 
   useEffect(() => {
-    if (arrivalMessage) {
-      if (arrivalMessage?.conversationId === conversationId) {
-        setMessageData((prevState: any) => [...prevState, arrivalMessage]);
+    if (upcomingMessage) {
+      if (upcomingMessage?.conversationId === conversationId) {
+        setMessageData((prevState: any) => [...prevState, upcomingMessage]);
       }
     }
-  }, [arrivalMessage]);
+  }, [upcomingMessage]);
 
   // console.log(arrivalMessage);
+
+  // console.log({ receiverId });
 
   const handleSendMessage = async () => {
     try {
@@ -82,6 +84,7 @@ const ChatSection = ({
 
       const data = {
         message,
+        receiver: receiverUser?._id,
       };
 
       setMessageData((prevState) => {
@@ -91,7 +94,7 @@ const ChatSection = ({
             message: message,
             userId: user?._id,
             conversationId: conversationId,
-            receiver: receiverId,
+            receiver: receiverUser?._id,
             sender: user?._id,
             seen: false,
             createdAt: Date.now(),
@@ -104,16 +107,29 @@ const ChatSection = ({
         message: message,
         userId: user?._id,
         conversationId: conversationId,
-        receiver: receiverId,
+        receiver: receiverUser?._id,
         sender: user?._id,
         seen: false,
+        delivered: true,
+        createdAt: Date.now(),
+        _id: v4(),
+      });
+
+      setArrivalMessage({
+        message: message,
+        userId: user?._id,
+        conversationId: conversationId,
+        receiver: receiverUser?._id,
+        sender: user?._id,
+        seen: false,
+        delivered: true,
         createdAt: Date.now(),
         _id: v4(),
       });
 
       const authToken = localStorage.getItem("authToken");
 
-      await fetch(sendMessagePath + `/${conversationId}`, {
+      await fetch(sendMessagePath, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +154,7 @@ const ChatSection = ({
 
     const fetchMessage = async () => {
       const authToken = localStorage.getItem("authToken");
-      const response = await fetch(getMessagePath + `/${conversationId}`, {
+      const response = await fetch(getMessagePath + `/${receiverUser?._id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -192,7 +208,7 @@ const ChatSection = ({
                   Neil Armstrong
                 </h3>
                 <small className="text-gray-500 tracking-wide">
-                  {activeUser === receiverId ? "Online" : "Offline"}
+                  {receiverOnline ? "Online" : "Offline"}
                 </small>
               </span>
             </div>
@@ -315,14 +331,14 @@ const ChatSection = ({
                   />
                 </span>
               )}
-
-              <SmileyFace
-                ref={emojiButtonRef}
-                className="text-gray-500 text-2xl cursor-pointer relative z-10 "
-                onClick={() => {
-                  setShowEmoji(!showEmoji);
-                }}
-              />
+              <span className="w-fit h-fit" ref={emojiButtonRef}>
+                <SmileyFace
+                  className="text-gray-500 text-2xl cursor-pointer relative z-10 "
+                  onClick={() => {
+                    setShowEmoji(!showEmoji);
+                  }}
+                />
+              </span>
 
               <input
                 type="text"

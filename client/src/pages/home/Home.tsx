@@ -8,8 +8,10 @@ import ChatSection from "./ChatSection";
 
 const Home = () => {
   const [conversationId, setConversationId] = useState("");
-  const [receiverId, setReceiverId] = useState("");
-  const [activeUser, setActiveUser] = useState("");
+  const [receiverUser, setReceiverUser] = useState<User>({});
+
+  const [arrivalMessage, setArrivalMessage] = useState<any>(null);
+
   const user: User = useSelector((state: any) => state.userDetail);
 
   const socket = useRef(io(socketPath));
@@ -26,34 +28,34 @@ const Home = () => {
   console.log(socket?.current?.id);
 
   useEffect(() => {
-    socket?.current?.on("user-online", (data: any) => {
-      // console.log(data);
-      setActiveUser(data);
-    });
     socket?.current?.on("user-details", (data: any) => {
       console.log("user-details", data);
     });
   }, [socket]);
 
   useEffect(() => {
-    if (receiverId) {
-      socket?.current?.emit("get-user-data", receiverId);
+    if (socket?.current) {
+      socket.current.on("message-receive", (data: any) => {
+        setArrivalMessage(data);
+      });
     }
-  }, [receiverId]);
+  }, [socket]);
 
   return (
     <section className="bg-white dark:bg-gray-900 flex-row flex h-screen overflow-hidden ">
       <LeftMenu
         setConversationId={setConversationId}
-        setReceiverId={setReceiverId}
+        receiverUser={receiverUser}
+        setReceiverUser={setReceiverUser}
         socket={socket}
+        arrivalMessage={arrivalMessage}
       />
 
       <ChatSection
         socket={socket}
+        receiverUser={receiverUser}
         conversationId={conversationId}
-        receiverId={receiverId}
-        activeUser={activeUser}
+        setArrivalMessage={setArrivalMessage}
       />
     </section>
   );

@@ -1,21 +1,26 @@
 import { Search } from "assets/icons";
 import { Avatar } from "components/core";
 import { useEffect, useState } from "react";
-import { friendsPath } from "config/path";
+import { friendsPath, seenMessagePath } from "config/path";
 import moment from "moment";
 import { useSelector } from "react-redux";
 import { SELECTOR_TYPE, User } from "types";
 
 const LeftMenu = ({
   setConversationId,
-  setReceiverId,
   socket,
+  arrivalMessage,
+  setReceiverUser,
+  receiverUser,
 }: {
   setConversationId: (id: string) => void;
-  setReceiverId: (id: string) => void;
   socket: any;
+  arrivalMessage: any;
+  setReceiverUser: (user: any) => void;
+  receiverUser: any;
 }) => {
   const [userFriend, setUserFriend] = useState([]);
+  const [sortedFriends, setSortedFriends] = useState<any[]>(userFriend);
   const [activeChat, setActiveChat] = useState("");
   const [totalUnseenMessage, setTotalUnseenMessage] = useState(0);
 
@@ -41,10 +46,87 @@ const LeftMenu = ({
       }
       setUserFriend(data.data);
 
-      // console.log(data.data);
+      console.log(data.data);
     };
     fetchData();
   }, []);
+
+  //set all message to seen
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const authToken = localStorage.getItem("authToken");
+        await fetch(seenMessagePath, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            receiver: user?._id,
+            sender: receiverUser?._id,
+          }),
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchData();
+  }, [receiverUser, arrivalMessage]);
+
+  //changeMessage in left side after new arrival Message
+
+  useEffect(() => {
+    if (!arrivalMessage) {
+      return;
+    }
+
+    const newMessage = {
+      _id: arrivalMessage._id,
+      conversationId: arrivalMessage.conversationId,
+      receiver: arrivalMessage.receiver,
+      delivered: arrivalMessage.delivered,
+      seen: arrivalMessage.seen,
+      sender: arrivalMessage.sender,
+      createdAt: arrivalMessage.createdAt,
+      message: arrivalMessage.message,
+    };
+    setUserFriend((prev: any) => {
+      return prev.map((item: any) => {
+        if (item?._id === newMessage.conversationId) {
+          return {
+            ...item,
+            message: newMessage,
+            unseenMessage: item.unseenMessage + 1,
+          };
+        }
+        return item;
+      });
+    });
+  }, [arrivalMessage]);
+
+  //sort user friend list by latest message
+
+  useEffect(() => {
+    if (!userFriend.length) {
+      return;
+    }
+    const sorted = userFriend.sort((a: any, b: any) => {
+      if (a.message?.createdAt > b.message?.createdAt) {
+        return -1;
+      }
+      if (a.message?.createdAt < b.message?.createdAt) {
+        return 1;
+      }
+      return 0;
+    });
+
+    setSortedFriends(sorted);
+  }, [userFriend]);
+
+  console.log({ activeChat });
 
   const handleRoomJoin = (id: string) => {
     socket?.current?.emit("join-room", id);
@@ -85,20 +167,20 @@ const LeftMenu = ({
         </span>
       </div>
       <div className="h-fit flex flex-col  ">
-        {userFriend?.map((item: any, index: number) => {
+        {sortedFriends?.map((item: any, index: number) => {
           return (
             <div
               className={` ${
                 activeChat === item?._id
-                  ? "bg-gradient-to-r from-[#f973162b] to-transparent border-orange-500"
+                  ? "!bg-gradient-to-r !from-[#f973162b] !to-transparent !border-orange-500"
                   : ""
               } w-full p-4 flex flex-row items-center  gap-2 cursor-pointer border-l-4 border-transparent  border-b !border-b-gray-200/10 hover:border-orange-500 bg-gradient-to-r from-transparent to-transparent hover:from-[#f973162b] hover:to-transparent transition-all ease-in-out duration-300 `}
               key={item?._id}
               onClick={() => {
                 setConversationId(item?._id);
-                setReceiverId(item?.user?._id);
                 handleRoomJoin(item?._id);
                 setActiveChat(item?._id);
+                setReceiverUser(item?.user);
               }}
             >
               <div className="">
