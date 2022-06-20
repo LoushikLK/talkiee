@@ -57,6 +57,11 @@ const registerSchema = new mongoose.Schema({
   gender: {
     type: String,
   },
+  groups: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+    },
+  ],
   conversations: [
     {
       type: mongoose.Schema.Types.ObjectId,

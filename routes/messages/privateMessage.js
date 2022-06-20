@@ -7,32 +7,90 @@ const userModel = require("../../models/user");
 
 //send message to a user
 
-router.post("/:conversationId", auth, async (req, res) => {
+router.post("/", auth, async (req, res) => {
   try {
-    const { conversationId } = req.params;
-    const { message } = req.body;
+    const { receiver, message } = req.body;
     const user = req.user.id;
 
-    //check message id exist or not
+    //check message conversation exist or not
 
-    const conversation = await conversationModel.findById(conversationId);
+    const conversation = await conversationModel.aggregate([
+      {
+        $match: {
+          $or: [
+            {
+              members: {
+                $all: [user, receiver],
+              },
+            },
+            {
+              members: {
+                $all: [receiver, user],
+              },
+            },
+          ],
+        },
+      },
+    ]);
 
     // console.log("conversation", conversation);
 
     if (!conversation) {
-      return res.status(404).json({
-        error: "Conversation not found",
-        data: {},
-        message: "Conversation not found",
+      //create new conversation if not exist
+
+      const newConversation = new conversationModel({
+        members: [user, receiver],
+      });
+
+      const saveConversation = await newConversation.save();
+
+      if (!saveConversation) {
+        return res.status(400).json({
+          error: "Conversation not created",
+          data: {},
+          message: "Conversation not created",
+        });
+      }
+
+      //then save both users in each other's conversation
+      const user1 = await userModel.findByIdAndUpdate(
+        user,
+        {
+          $push: saveConversation._id,
+        },
+        {
+          new: true,
+        }
+      );
+      const user2 = await userModel.findById(
+        receiver,
+        {
+          $push: saveConversation._id,
+        },
+        {
+          new: true,
+        }
+      );
+
+      if (!user1 || !user2) {
+        return res.status(400).json({
+          error: "Conversation not created",
+          data: {},
+          message: "Conversation not created",
+        });
+      }
+
+      return res.status(200).json({
+        error: null,
+        data: saveConversation,
+        message: "Conversation created",
       });
     }
 
-    const to = conversation?.members?.find((member) => member !== user);
-
     const newMessage = new messageModel({
-      conversationId: conversationId,
+      conversationId: conversation[0]._id,
       sender: user,
-      receiver: to,
+      receiver: receiver,
       message,
       createdAt: Date.now(),
       seen: false,
@@ -66,26 +124,42 @@ router.post("/:conversationId", auth, async (req, res) => {
 
 //get message from a conversation
 
-router.get("/:conversationId", auth, async (req, res) => {
+router.get("/:userId", auth, async (req, res) => {
   try {
-    const { conversationId } = req.params;
+    const user = req.user.id;
+    const otherUser = req.params.userId;
 
-    const conversation = await conversationModel
-      .findById(conversationId)
-      .lean();
+    const conversation = await conversationModel.aggregate([
+      {
+        $match: {
+          $or: [
+            {
+              members: {
+                $all: [user, otherUser],
+              },
+            },
+            {
+              members: {
+                $all: [otherUser, user],
+              },
+            },
+          ],
+        },
+      },
+    ]);
 
     if (!conversation) {
-      return res.status(404).json({
-        error: "Conversation not found",
-        data: {},
-        message: "Conversation not found",
+      return res.status(200).json({
+        error: "Conversation not exist",
+        data: [],
+        message: "Conversation not exist",
       });
     }
 
     //get last 50 messages from a conversation
     const messages = await messageModel
       .find({
-        conversationId: conversationId,
+        conversationId: conversation[0]._id,
       })
       .sort({ createdAt: -1 })
       .limit(50)
@@ -108,83 +182,47 @@ router.get("/:conversationId", auth, async (req, res) => {
 
 //create a new conversation
 
-router.post("/create/:userId", auth, async (req, res) => {
+router.post("/seen", auth, async (req, res) => {
   try {
-    const { userId } = req.params;
-    const user = req.user.id;
+    const receiver = req.user.id;
+    const sender = req.body.sender;
 
-    console.log(userId);
-    console.log(user);
+    console.log({ receiver });
+    console.log({ sender });
 
-    const conversation = await conversationModel
-      .findOne({
-        $or: [
-          {
-            members: { $all: [user, userId] },
-          },
-          {
-            members: { $all: [userId, user] },
-          },
-        ],
-      })
-      .lean();
-
-    if (!conversation) {
-      const newConversation = new conversationModel({
-        members: [user, userId],
-      });
-
-      const saveConversation = await newConversation.save();
-
-      if (!saveConversation) {
-        return res.status(400).json({
-          error: "Conversation not created",
-          data: {},
-          message: "Conversation not created",
-        });
+    const message = await messageModel.updateMany(
+      {
+        receiver: mongoose.Types.ObjectId(receiver),
+        sender: mongoose.Types.ObjectId(sender),
+        seen: false,
+      },
+      {
+        seen: true,
+      },
+      {
+        multi: true,
       }
+    );
 
-      //then save both users in each other's conversation
-      const user1 = await userModel.findById(user);
-      const user2 = await userModel.findById(userId);
-
-      // console.log(user1);
-      // console.log(user2);
-
-      user1?.conversations?.push(saveConversation._id);
-      user2?.conversations?.push(saveConversation._id);
-
-      // console.log(user1);
-      // console.log(user2);
-
-      const saveUser1 = await user1.save();
-      const saveUser2 = await user2.save();
-
-      if (!saveUser1 || !saveUser2) {
-        return res.status(400).json({
-          error: "Conversation not created",
-          data: {},
-          message: "Conversation not created",
-        });
-      }
-
-      return res.status(200).json({
-        error: null,
-        data: saveConversation,
-        message: "Conversation created",
+    if (!message) {
+      return res.status(400).json({
+        error: "Message not seen",
+        data: {},
+        message: "Message not seen",
       });
     }
+
     return res.status(200).json({
       error: null,
-      data: conversation,
-      message: "Conversation already exists",
+      data: {},
+      message: "Message seen",
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       message: "error",
       data: {},
-      error: error,
+      error: error.message,
     });
   }
 });

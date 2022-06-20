@@ -47,9 +47,13 @@ app.use("/register", require("./routes/auth/register"));
 app.use("/login", require("./routes/auth/login"));
 app.use("/checkuser", require("./routes/auth/checkUser"));
 app.use("/message/private", require("./routes/messages/privateMessage"));
+app.use("/message/group", require("./routes/messages/groupMessage"));
 app.use("/feed", require("./routes/post/postFeed"));
 app.use("/self", require("./routes/user/self"));
 app.use("/friends", require("./routes/user/friends"));
+app.use("/user", require("./routes/user/details"));
+app.use("/self/group", require("./routes/user/group"));
+app.use("/group", require("./routes/group/group"));
 
 app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "./client/build", "index.html"));
@@ -77,20 +81,20 @@ io.on("connection", (socketObj) => {
     }
   });
 
-  socket.on("get-user-data", async (data) => {
-    console.log("socket-id: " + socket.client.id);
-    await getUserDetails(socket, data);
-  });
+  // socket.on("get-user-data", async (data) => {
+  //   console.log("socket-id: " + socket.client.id);
+  //   await getUserDetails(socket, data);
+  // });
 
   socket.on("disconnect", async () => {
     console.log("user disconnected", socket.id);
-
+    socket.emit("user-offline", socket.id);
     // console.log(onlineUsers);
     onlineUsers.forEach((value, key) => {
       if (value === socket.id) {
         setOffline(key, socket);
+
         onlineUsers.delete(key);
-        socket.emit("user-offline", key);
       }
     });
     socket.disconnect();
