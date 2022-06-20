@@ -6,7 +6,7 @@ router.get("/", auth, async (req, res) => {
   try {
     // console.log("at self");
 
-    const user = await userSchema.findById(req.user.id);
+    const user = await userSchema.findById(req.user.id).lean();
 
     if (!user) {
       return res.status(400).json({

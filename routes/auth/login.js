@@ -13,9 +13,11 @@ router.post("/", async (req, res) => {
 
     const { phone, password } = req.body;
 
-    const phoneExist = await userModel.findOne({
-      phone,
-    });
+    const phoneExist = await userModel
+      .findOne({
+        phone,
+      })
+      .lean();
 
     // console.log("phoneExist", phoneExist);
 

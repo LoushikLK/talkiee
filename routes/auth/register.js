@@ -25,12 +25,16 @@ router.post("/", checkUser, async (req, res) => {
 
     const { name, phone, email, password, gender } = req.body;
 
-    const phoneExist = await userModel.findOne({
-      phone,
-    });
-    const emailExist = await userModel.findOne({
-      email,
-    });
+    const phoneExist = await userModel
+      .findOne({
+        phone,
+      })
+      .lean();
+    const emailExist = await userModel
+      .findOne({
+        email,
+      })
+      .lean();
     if (phoneExist) {
       return res.status(401).json({
         message: "Phone number already exist. Please login",

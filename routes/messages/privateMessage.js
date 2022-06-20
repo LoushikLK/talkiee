@@ -70,7 +70,9 @@ router.get("/:conversationId", auth, async (req, res) => {
   try {
     const { conversationId } = req.params;
 
-    const conversation = await conversationModel.findById(conversationId);
+    const conversation = await conversationModel
+      .findById(conversationId)
+      .lean();
 
     if (!conversation) {
       return res.status(404).json({
@@ -86,7 +88,8 @@ router.get("/:conversationId", auth, async (req, res) => {
         conversationId: conversationId,
       })
       .sort({ createdAt: -1 })
-      .limit(50);
+      .limit(50)
+      .lean();
 
     res.status(200).json({
       error: null,
@@ -113,16 +116,18 @@ router.post("/create/:userId", auth, async (req, res) => {
     console.log(userId);
     console.log(user);
 
-    const conversation = await conversationModel.findOne({
-      $or: [
-        {
-          members: { $all: [user, userId] },
-        },
-        {
-          members: { $all: [userId, user] },
-        },
-      ],
-    });
+    const conversation = await conversationModel
+      .findOne({
+        $or: [
+          {
+            members: { $all: [user, userId] },
+          },
+          {
+            members: { $all: [userId, user] },
+          },
+        ],
+      })
+      .lean();
 
     if (!conversation) {
       const newConversation = new conversationModel({

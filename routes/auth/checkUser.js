@@ -8,9 +8,11 @@ router.post("/", async (req, res) => {
   try {
     const { phone } = req.body;
 
-    const phoneExist = await userModel.findOne({
-      phone,
-    });
+    const phoneExist = await userModel
+      .findOne({
+        phone,
+      })
+      .lean();
 
     if (!phoneExist) {
       return res.status(400).json({

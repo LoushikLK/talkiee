@@ -17,6 +17,16 @@ const postSchema = new mongoose.Schema(
         type: String,
       },
     },
+    viewers: [
+      {
+        _id: {
+          type: mongoose.Schema.Types.ObjectId,
+        },
+        seen: {
+          type: Boolean,
+        },
+      },
+    ],
     createdAt: {
       type: Date,
       default: Date.now,

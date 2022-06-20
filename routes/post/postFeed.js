@@ -2,44 +2,86 @@ const express = require("express");
 const auth = require("../../middleware/auth");
 const router = express.Router();
 const postModel = require("../../models/post");
+const contactModel = require("../../models/contacts");
 
-const fileUploader = require("../../middleware/fileUploader");
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
 
-router.post("/", auth, async (req, res) => {
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+let storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+router.post("/", auth, upload.single("file"), async (req, res) => {
   try {
-    const { file, caption } = req.body;
-    const { id } = req.user;
+    if (!req.file) {
+      return res.status(400).json({
+        message: "No file uploaded",
+        data: {},
+        error: "No file uploaded",
+      });
+    }
 
-    console.log(req.upload);
+    const result = await cloudinary.uploader.upload(req.file.path);
 
-    console.log(req.file);
-    // const postData = new postModel({
-    //   user: id,
-    //   post: {
-    //     url: post?.url,
-    //     refUrl: post?.refUrl,
-    //     caption: post?.caption,
-    //   },
-    //   createdAt: Date.now(),
-    //   expiresAt: Date.now() + 20000,
-    // });
+    const user = req.user.id;
 
-    // const savedPost = await postData.save();
+    //access contacts of user
 
-    // if (!savedPost) {
-    //   return res.status(400).send({
-    //     error: "Post could not be saved",
-    //     message: "Post could not be saved",
-    //     data: {},
-    //   });
-    // }
+    const contacts = await contactModel.findOne({ user: user }).lean();
 
-    return res.status(200).send({
-      message: "Post saved successfully",
-      data: {
-        post: "",
+    //create post
+
+    const post = new postModel({
+      user: user,
+      post: {
+        url: result.url,
+        refUrl: result.public_id,
+        caption: req.body.caption,
       },
-      error: "",
+      viewers: [
+        contacts[0].contacts.map((contact) => {
+          if (contact.viewStatus) {
+            return {
+              _id: contact._id,
+              seen: false,
+            };
+          }
+        }),
+      ],
+    });
+
+    const savedPost = await post.save();
+
+    if (!savedPost) {
+      return res.status(400).json({
+        message: "Post not saved",
+        data: {},
+        error: "Post not saved",
+      });
+    }
+
+    return res.status(200).json({
+      message: "Post saved",
+      data: {
+        post: {
+          url: result.url,
+        },
+        postId: savedPost._id,
+      },
+      error: null,
     });
   } catch (error) {
     console.log(error);
