@@ -48,11 +48,17 @@ router.post("/update", auth, async (req, res) => {
     });
 
     const savedContacts = await contactModel
-      .findOneAndUpdate(prevContacts._id, {
-        $push: {
-          contacts: updatedContacts,
+      .findOneAndUpdate(
+        prevContacts._id,
+        {
+          $push: {
+            contacts: updatedContacts,
+          },
         },
-      })
+        {
+          new: true,
+        }
+      )
       .lean();
 
     if (!savedContacts) {
@@ -72,3 +78,5 @@ router.post("/update", auth, async (req, res) => {
     console.log(error);
   }
 });
+
+module.exports = router;

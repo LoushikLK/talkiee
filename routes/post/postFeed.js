@@ -5,6 +5,7 @@ const postModel = require("../../models/post");
 const contactModel = require("../../models/contacts");
 
 const multer = require("multer");
+const { default: mongoose } = require("mongoose");
 const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
@@ -44,6 +45,15 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
 
     //create post
 
+    const viewers = contacts?.contacts.map((contact) => {
+      if (contact.viewStatus) {
+        return {
+          _id: contact._id,
+          seen: false,
+        };
+      }
+    });
+
     const post = new postModel({
       user: user,
       post: {
@@ -51,16 +61,7 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
         refUrl: result.public_id,
         caption: req.body.caption,
       },
-      viewers: [
-        contacts[0].contacts.map((contact) => {
-          if (contact.viewStatus) {
-            return {
-              _id: contact._id,
-              seen: false,
-            };
-          }
-        }),
-      ],
+      viewers: viewers,
     });
 
     const savedPost = await post.save();
@@ -94,11 +95,38 @@ router.post("/", auth, upload.single("file"), async (req, res) => {
 });
 router.get("/", auth, async (req, res) => {
   try {
-    console.log(req.user);
-    console.log(Date.now());
+    const user = req.user.id;
 
-    res.json({
-      message: "Post Feed",
+    //access status of other users in contacts
+
+    const status = await postModel.aggregate([
+      {
+        $match: {
+          viewers: {
+            $elemMatch: {
+              _id: mongoose.Types.ObjectId(user),
+            },
+          },
+        },
+      },
+    ]);
+
+    if (!status) {
+      return res.status(200).json({
+        message: "No status",
+        data: {
+          status: [],
+        },
+        error: null,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Status fetched",
+      data: {
+        status: status,
+      },
+      error: null,
     });
   } catch (error) {
     console.log(error);

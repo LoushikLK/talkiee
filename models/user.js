@@ -47,6 +47,9 @@ const registerSchema = new mongoose.Schema({
   profileImage: {
     type: String,
   },
+  profileImageRef: {
+    type: String,
+  },
   coverImage: {
     type: String,
   },

@@ -54,6 +54,8 @@ app.use("/friends", require("./routes/user/friends"));
 app.use("/user", require("./routes/user/details"));
 app.use("/self/group", require("./routes/user/group"));
 app.use("/group", require("./routes/group/group"));
+app.use("/contact", require("./routes/user/contact"));
+app.use("/user", require("./routes/user/profile"));
 
 app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "./client/build", "index.html"));
