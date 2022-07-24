@@ -18,9 +18,8 @@ const setOffline = async (userId, socket) => {
       return false;
     }
     // console.log(`user ${user} is offline`);
-    socket.disconnect(true);
-
     console.log(userData?.name + " is offline");
+    socket.disconnect(true);
 
     return true;
   } catch (error) {

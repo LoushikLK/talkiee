@@ -29,7 +29,7 @@ router.get("/", auth, async (req, res) => {
 
     const allData = await Promise.all(
       allConversations.groups.map(async (conversation) => {
-        console.log({ conversation });
+        // console.log({ conversation });
         const messages = await groupMessage
           .aggregate([
             {

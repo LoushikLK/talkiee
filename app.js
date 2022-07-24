@@ -77,7 +77,8 @@ io.on("connection", (socketObj) => {
 
   socket.on("send-message", (data) => {
     const sendUserSocket = onlineUsers.get(data.receiver);
-    console.log(sendUserSocket);
+    // console.log(sendUserSocket);
+    console.log("sending");
     if (sendUserSocket) {
       socket.to(sendUserSocket).emit("message-receive", data);
     }
@@ -89,18 +90,15 @@ io.on("connection", (socketObj) => {
   // });
 
   socket.on("disconnect", async () => {
-    console.log("user disconnected", socket.id);
-    socket.emit("user-offline", socket.id);
     // console.log(onlineUsers);
     onlineUsers.forEach((value, key) => {
       if (value === socket.id) {
         setOffline(key, socket);
-
+        socket.emit("user-offline", key);
         onlineUsers.delete(key);
       }
     });
     socket.disconnect();
-    console.log("disconnected");
   });
 });
 

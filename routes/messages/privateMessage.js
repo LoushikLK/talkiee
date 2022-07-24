@@ -156,10 +156,12 @@ router.get("/:userId", auth, async (req, res) => {
       });
     }
 
+    console.log(conversation);
+
     //get last 50 messages from a conversation
     const messages = await messageModel
       .find({
-        conversationId: conversation[0]._id,
+        conversationId: conversation[0]?._id,
       })
       .sort({ createdAt: -1 })
       .limit(50)

@@ -4,67 +4,69 @@ const auth = require("../../middleware/auth");
 const userSchema = require("../../models/user");
 
 const contactModel = require("../../models/contacts");
+const parsePhoneNumber = require("libphonenumber-js");
 
 router.post("/update", auth, async (req, res) => {
   try {
-    const { contacts } = req.body;
+    const { contacts, muted } = req.body;
 
     //get user contacts from db
 
-    const prevContacts = await contactModel
-      .findOne({ user: req.user.id })
-      .lean();
+    let phoneNumberArray = [];
 
-    //update contacts
+    let mutedNumberArray = [];
 
-    if (!prevContacts) {
-      const newContact = new contactModel({
-        user: req.user.id,
-        contacts,
-      });
-
-      await newContact.save();
-
-      return res.status(200).json({
-        message: "Contacts updated",
-        data: {},
-        error: null,
+    if (contacts?.length > 0) {
+      contacts?.forEach((contact) => {
+        let phoneNumber = parsePhoneNumber(contact.phoneNumber, "IN");
+        phoneNumberArray?.push(phoneNumber.number);
       });
     }
 
-    const updatedContacts = [];
+    if (muted.length > 0) {
+      muted?.forEach((contact) => {
+        let phoneNumber = parsePhoneNumber(contact, "IN");
+        mutedNumberArray(phoneNumber?.number);
+      });
+    }
 
-    prevContacts?.contacts.forEach((contact) => {
-      const newContact = contacts.find((c) => c.phone !== contact.phone);
+    //check all contacts and retrieve contact that are users
 
-      if (newContact) {
-        updatedContacts.push({
-          _id: newContact._id,
-          name: newContact.name,
-          phone: newContact.phone,
-          viewStatus: true,
-        });
-      }
+    const allUserContacts = await userSchema?.aggregate([
+      {
+        $match: { phone: { $in: phoneNumberArray } },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          phone: 1,
+        },
+      },
+    ]);
+
+    let viewStatusUser = allUserContacts?.map((user) => {
+      return {
+        ...user,
+        viewStatus: !mutedNumberArray?.some((item) => {
+          return item === user?.phone;
+        }),
+      };
     });
 
-    const savedContacts = await contactModel
-      .findOneAndUpdate(
-        prevContacts._id,
-        {
-          $push: {
-            contacts: updatedContacts,
-          },
-        },
-        {
-          new: true,
-        }
-      )
-      .lean();
+    const updatedContacts = await contactModel.findOneAndUpdate(
+      { user: req.user.id },
+      {
+        contacts: viewStatusUser,
+      }
+    );
 
-    if (!savedContacts) {
+    //update contacts
+
+    if (!updatedContacts) {
       return res.status(400).json({
         message: "Contacts not updated",
-        data: {},
+        data: viewStatusUser,
         error: "Contacts not updated",
       });
     }
@@ -75,7 +77,12 @@ router.post("/update", auth, async (req, res) => {
       error: null,
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+    return res.status(500).json({
+      message: "Error updating contacts",
+      data: {},
+      error: error,
+    });
   }
 });
 

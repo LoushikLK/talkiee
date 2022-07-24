@@ -76,11 +76,6 @@ const registerSchema = new mongoose.Schema({
   updatedAt: Number,
 });
 
-registerSchema.pre("save", function (next) {
-  this.createdAt = Date.now();
-  next();
-});
-
 const userModel = mongoose.model("users", registerSchema);
 
 module.exports = userModel;
