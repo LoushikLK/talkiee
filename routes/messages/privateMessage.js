@@ -12,6 +12,8 @@ router.post("/", auth, async (req, res) => {
     const { receiver, message } = req.body;
     const user = req.user.id;
 
+    // console.log("req", req.body);
+
     //check message conversation exist or not
 
     const conversation = await conversationModel.aggregate([
@@ -35,7 +37,7 @@ router.post("/", auth, async (req, res) => {
 
     // console.log("conversation", conversation);
 
-    if (!conversation) {
+    if (!conversation || conversation.length === 0) {
       //create new conversation if not exist
 
       const newConversation = new conversationModel({
@@ -52,25 +54,29 @@ router.post("/", auth, async (req, res) => {
         });
       }
 
+      // console.log(saveConversation);
+
       //then save both users in each other's conversation
       const user1 = await userModel.findByIdAndUpdate(
         user,
-        {
-          $push: saveConversation._id,
-        },
+        { $push: { conversations: saveConversation._id } },
         {
           new: true,
         }
       );
-      const user2 = await userModel.findById(
+      const user2 = await userModel.findByIdAndUpdate(
         receiver,
         {
-          $push: saveConversation._id,
+          $push: {
+            conversations: saveConversation._id,
+          },
         },
         {
           new: true,
         }
       );
+
+      // console.log("running");
 
       if (!user1 || !user2) {
         return res.status(400).json({
@@ -80,15 +86,27 @@ router.post("/", auth, async (req, res) => {
         });
       }
 
+      const newMessage = new messageModel({
+        conversationId: saveConversation?._id,
+        sender: user,
+        receiver: receiver,
+        message,
+        createdAt: Date.now(),
+        seen: false,
+        delivered: false,
+      });
+
+      const saveMessage = await newMessage.save();
+
       return res.status(200).json({
         error: null,
-        data: saveConversation,
+        data: saveMessage,
         message: "Conversation created",
       });
     }
 
     const newMessage = new messageModel({
-      conversationId: conversation[0]._id,
+      conversationId: conversation[0]?._id,
       sender: user,
       receiver: receiver,
       message,
@@ -117,7 +135,7 @@ router.post("/", auth, async (req, res) => {
     res.status(500).json({
       message: "error",
       data: {},
-      error: error,
+      error: error?.message,
     });
   }
 });
@@ -156,7 +174,7 @@ router.get("/:userId", auth, async (req, res) => {
       });
     }
 
-    console.log(conversation);
+    // console.log(conversation);
 
     //get last 50 messages from a conversation
     const messages = await messageModel
@@ -177,7 +195,7 @@ router.get("/:userId", auth, async (req, res) => {
     res.status(500).json({
       message: "error",
       data: {},
-      error: error,
+      error: error?.message,
     });
   }
 });
@@ -189,8 +207,8 @@ router.post("/seen", auth, async (req, res) => {
     const receiver = req.user.id;
     const sender = req.body.sender;
 
-    console.log({ receiver });
-    console.log({ sender });
+    // console.log({ receiver });
+    // console.log({ sender });
 
     const message = await messageModel.updateMany(
       {
@@ -220,7 +238,7 @@ router.post("/seen", auth, async (req, res) => {
       message: "Message seen",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({
       message: "error",
       data: {},

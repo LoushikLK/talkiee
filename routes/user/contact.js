@@ -10,6 +10,8 @@ router.post("/update", auth, async (req, res) => {
   try {
     const { contacts, muted } = req.body;
 
+    // console.log(contacts);
+
     //get user contacts from db
 
     let phoneNumberArray = [];
@@ -30,6 +32,8 @@ router.post("/update", auth, async (req, res) => {
       });
     }
 
+    // console.log(phoneNumberArray[phoneNumberArray?.length - 1]);
+
     //check all contacts and retrieve contact that are users
 
     const allUserContacts = await userSchema?.aggregate([
@@ -41,47 +45,79 @@ router.post("/update", auth, async (req, res) => {
           _id: 1,
           name: 1,
           phone: 1,
+          profileImage: 1,
+          status: 1,
         },
       },
     ]);
 
-    let viewStatusUser = allUserContacts?.map((user) => {
-      return {
-        ...user,
-        viewStatus: !mutedNumberArray?.some((item) => {
-          return item === user?.phone;
-        }),
-      };
-    });
+    if (allUserContacts?.length) {
+      let viewStatusUser = allUserContacts?.map((user) => {
+        return {
+          _id: user?._id,
+          phone: user?.phone,
+          viewStatus: !mutedNumberArray?.some((item) => {
+            return item === user?.phone;
+          }),
+        };
+      });
 
-    const updatedContacts = await contactModel.findOneAndUpdate(
-      { user: req.user.id },
-      {
-        contacts: viewStatusUser,
+      // console.log("view", viewStatusUser);
+
+      const updatedContacts = await contactModel.findOneAndUpdate(
+        { user: req.user.id },
+        {
+          contacts: viewStatusUser,
+        },
+        {
+          new: true,
+        }
+      );
+
+      // console.log(updatedContacts);
+      //update contacts
+
+      if (!updatedContacts) {
+        let newContacts = new contactModel({
+          user: req.user.id,
+          contacts: viewStatusUser,
+        });
+
+        const saveNewContacts = await newContacts.save();
+
+        if (!saveNewContacts) {
+          return res.status(200).json({
+            message: "Contacts updating failed",
+            data: {},
+            error: "Contacts updating failed",
+          });
+        }
+
+        return res.status(200).json({
+          message: "Contacts updated",
+          data: allUserContacts,
+          error: null,
+        });
       }
-    );
 
-    //update contacts
-
-    if (!updatedContacts) {
-      return res.status(400).json({
-        message: "Contacts not updated",
-        data: viewStatusUser,
-        error: "Contacts not updated",
+      return res.status(200).json({
+        message: "Contacts updated",
+        data: allUserContacts,
+        error: null,
+      });
+    } else {
+      return res.status(200).json({
+        message: "Contacts not found",
+        data: {},
+        error: null,
       });
     }
-
-    return res.status(200).json({
-      message: "Contacts updated",
-      data: {},
-      error: null,
-    });
   } catch (error) {
     // console.log(error);
     return res.status(500).json({
       message: "Error updating contacts",
       data: {},
-      error: error,
+      error: error?.message,
     });
   }
 });

@@ -56,6 +56,8 @@ app.use("/self/group", require("./routes/user/group"));
 app.use("/group", require("./routes/group/group"));
 app.use("/contact", require("./routes/user/contact"));
 app.use("/user", require("./routes/user/profile"));
+app.use("/changepassword", require("./routes/auth/changePassword"));
+app.use("/forgetpassword", require("./routes/auth/forgetPassword"));
 
 app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "./client/build", "index.html"));
@@ -78,16 +80,27 @@ io.on("connection", (socketObj) => {
   socket.on("send-message", (data) => {
     const sendUserSocket = onlineUsers.get(data.receiver);
     // console.log(sendUserSocket);
-    console.log("sending");
     if (sendUserSocket) {
       socket.to(sendUserSocket).emit("message-receive", data);
     }
   });
 
-  // socket.on("get-user-data", async (data) => {
-  //   console.log("socket-id: " + socket.client.id);
-  //   await getUserDetails(socket, data);
-  // });
+  socket.on("typing-on", (data) => {
+    console.log("typing");
+
+    const sendUserSocket = onlineUsers.get(data.receiver);
+    if (sendUserSocket) {
+      socket.to(sendUserSocket).emit("typing-user", data);
+    }
+  });
+  socket.on("typing-off", (data) => {
+    console.log("typing off");
+
+    const sendUserSocket = onlineUsers.get(data.receiver);
+    if (sendUserSocket) {
+      socket.to(sendUserSocket).emit("typing-off-user", data);
+    }
+  });
 
   socket.on("disconnect", async () => {
     // console.log(onlineUsers);

@@ -1,11 +1,6 @@
 const { Router } = require("express");
-const { validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const checkUser = require("../../utils/firebaseConfig");
-
-const registerValidationSchema = require("../../middleware/registerValidation");
-
 const userModel = require("../../models/user");
 const jwtCreate = require("../../utils/jwtCreate");
 
@@ -78,7 +73,7 @@ router.post("/", checkUser, async (req, res) => {
     console.log(error);
     res.status(400).json({
       message: "Something went wrong, please try again",
-      error: error,
+      error: error?.message,
       data: {},
     });
   }

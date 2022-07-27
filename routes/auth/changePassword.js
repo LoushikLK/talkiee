@@ -1,28 +1,32 @@
 const { Router } = require("express");
 const bcrypt = require("bcrypt");
 const userModel = require("../../models/user");
-const checkUser = require("../../utils/firebaseConfig");
+const auth = require("../../middleware/auth");
 
 const router = Router();
 
 const saltRound = 10;
 
-router.post("/", checkUser, async (req, res) => {
+router.post("/", auth, async (req, res) => {
   try {
-    const { newPassword, phoneNumber } = req.body;
+    const userId = req.user?.id;
 
-    if (!newPassword || !phoneNumber) {
-      throw new Error(`Please provide a new password and a phone number`);
+    const { oldPassword, newPassword } = req.body;
+
+    if (oldPassword === newPassword) {
+      throw new Error(`New password and old password can not be equal`);
     }
 
-    const phoneExist = await userModel
-      .findOne({
-        phone: phoneNumber,
-      })
-      .lean();
+    const userData = await userModel.findById(userId);
 
-    if (!phoneExist) {
-      throw new Error(`Phone number does not exist.`);
+    if (!userData) {
+      throw new Error(`User  does not exist`);
+    }
+
+    const checkPassword = await bcrypt.compare(oldPassword, userData?.password);
+
+    if (!checkPassword) {
+      throw new Error(`Old password does not match`);
     }
 
     const newHashPassword = await bcrypt.hash(newPassword, saltRound);
@@ -32,7 +36,7 @@ router.post("/", checkUser, async (req, res) => {
     }
 
     const updatePassword = await userModel?.findByIdAndUpdate(
-      phoneExist?._id,
+      userId,
       { password: newHashPassword },
       {
         new: true,

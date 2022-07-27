@@ -110,11 +110,11 @@ router.post("/update", auth, upload.single("file"), async (req, res) => {
       error: "",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     return res.status(400).json({
       message: "Couldn't update user",
       data: {},
-      error: error,
+      error: error?.message,
     });
   }
 });

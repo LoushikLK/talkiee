@@ -25,7 +25,7 @@ const Home = () => {
     });
   }, [user?._id]);
 
-  console.log(socket?.current?.id);
+  // console.log(socket?.current?.id);
 
   useEffect(() => {
     socket?.current?.on("user-details", (data: any) => {
