@@ -30,7 +30,7 @@ router.get("/", auth, async (req, res) => {
     // console.log();
 
     const allData = await Promise.all(
-      allConversations.conversations.map(async (conversation) => {
+      allConversations?.conversations?.map(async (conversation) => {
         const messages = await messageSchema
           .aggregate([
             {
@@ -78,6 +78,7 @@ router.get("/", auth, async (req, res) => {
             profileImage: userData[0]?.profileImage,
             _id: userData[0]?._id,
             gender: userData[0]?.gender,
+            lastSeen: userData[0]?.lastSeen,
           },
         };
       })
@@ -92,8 +93,6 @@ router.get("/", auth, async (req, res) => {
     });
 
     //find friends details and add to conversation
-
-    console.log(allConversations);
   } catch (error) {
     console.log(error);
     res.status(500).json({

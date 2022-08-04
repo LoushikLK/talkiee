@@ -74,12 +74,13 @@ io.on("connection", (socketObj) => {
   socket.on("user-online", (userId) => {
     setOnline(userId, socket);
     onlineUsers.set(userId, socket.id);
-    socket.emit("user-online", userId);
+    socket.emit("user-comes-online", userId);
   });
 
   socket.on("send-message", (data) => {
     const sendUserSocket = onlineUsers.get(data.receiver);
-    // console.log(sendUserSocket);
+    console.log(onlineUsers);
+    console.log(sendUserSocket);
     if (sendUserSocket) {
       socket.to(sendUserSocket).emit("message-receive", data);
     }
@@ -87,7 +88,6 @@ io.on("connection", (socketObj) => {
 
   socket.on("typing-on", (data) => {
     console.log("typing");
-
     const sendUserSocket = onlineUsers.get(data.receiver);
     if (sendUserSocket) {
       socket.to(sendUserSocket).emit("typing-user", data);
@@ -107,7 +107,11 @@ io.on("connection", (socketObj) => {
     onlineUsers.forEach((value, key) => {
       if (value === socket.id) {
         setOffline(key, socket);
-        socket.emit("user-offline", key);
+        let data = {
+          userId: key,
+          timestamps: new Date().getTime(),
+        };
+        socket.emit("user-goes-offline", data);
         onlineUsers.delete(key);
       }
     });
