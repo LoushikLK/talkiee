@@ -79,23 +79,18 @@ io.on("connection", (socketObj) => {
 
   socket.on("send-message", (data) => {
     const sendUserSocket = onlineUsers.get(data.receiver);
-    console.log(onlineUsers);
-    console.log(sendUserSocket);
     if (sendUserSocket) {
       socket.to(sendUserSocket).emit("message-receive", data);
     }
   });
 
   socket.on("typing-on", (data) => {
-    console.log("typing");
     const sendUserSocket = onlineUsers.get(data.receiver);
     if (sendUserSocket) {
       socket.to(sendUserSocket).emit("typing-user", data);
     }
   });
   socket.on("typing-off", (data) => {
-    console.log("typing off");
-
     const sendUserSocket = onlineUsers.get(data.receiver);
     if (sendUserSocket) {
       socket.to(sendUserSocket).emit("typing-off-user", data);

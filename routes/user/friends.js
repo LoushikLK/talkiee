@@ -4,6 +4,7 @@ const router = require("express").Router();
 const conversationSchema = require("../../models/conversation");
 const messageSchema = require("../../models/messages");
 const { default: mongoose } = require("mongoose");
+const contacts = require("../../models/contacts");
 
 router.get("/", auth, async (req, res) => {
   try {
@@ -95,6 +96,77 @@ router.get("/", auth, async (req, res) => {
     //find friends details and add to conversation
   } catch (error) {
     console.log(error);
+    res.status(500).json({
+      message: "error",
+      data: {},
+      error: error,
+    });
+  }
+});
+
+router.get("/all", auth, async (req, res) => {
+  try {
+    const user = req.user.id;
+
+    const getAllContacts = await contacts.aggregate([
+      {
+        $match: {
+          user: mongoose.Types.ObjectId(user),
+        },
+      },
+      {
+        $unwind: "$contacts",
+      },
+      {
+        $lookup: {
+          as: "friend",
+          from: "users",
+          foreignField: "_id",
+          localField: "contacts._id",
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                phone: 1,
+                profileImage: 1,
+                status: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          viewStatus: "$contacts.viewStatus",
+        },
+      },
+      {
+        $addFields: {
+          _id: "$contacts._id",
+        },
+      },
+      {
+        $unwind: "$friend",
+      },
+      {
+        $project: {
+          _id: 1,
+          friend: 1,
+          viewStatus: 1,
+        },
+      },
+    ]);
+
+    if (!getAllContacts || getAllContacts?.length === 0)
+      throw new Error("No friends found");
+
+    return res.status(200).json({
+      error: null,
+      data: getAllContacts,
+      message: "All friends list",
+    });
+  } catch (error) {
     res.status(500).json({
       message: "error",
       data: {},
