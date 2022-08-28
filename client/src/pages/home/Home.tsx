@@ -25,14 +25,6 @@ const Home = () => {
     });
   }, [user?._id]);
 
-  // console.log(socket?.current?.id);
-
-  useEffect(() => {
-    socket?.current?.on("user-details", (data: any) => {
-      console.log("user-details", data);
-    });
-  }, [socket]);
-
   useEffect(() => {
     if (socket?.current) {
       socket.current.on("message-receive", (data: any) => {

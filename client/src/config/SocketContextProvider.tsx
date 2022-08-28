@@ -11,6 +11,8 @@ export const SocketContext = createContext();
 const SocketContextProvider = ({ children }: any) => {
   const user: User = useSelector((state: any) => state?.userDetail);
 
+  console.log({ user });
+
   const socket = useRef<any>(null);
 
   useEffect(() => {

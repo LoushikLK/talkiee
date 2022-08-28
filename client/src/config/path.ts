@@ -1,4 +1,4 @@
-export const baseUrl = "http://localhost:8000";
+export const BASE_URL = "http://localhost:8000/";
 
 export const registerPath = "https://talkieeapp.herokuapp.com/register";
 
@@ -19,3 +19,7 @@ export const seenMessagePath = "http://localhost:8000/message/private/seen";
 export const userDetailsPath = "http://localhost:8000/user";
 
 export const socketPath = "ws://localhost:8000/";
+
+export const getAllFriends = "friends/all";
+
+export const getFriends = "friends";

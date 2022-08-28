@@ -147,6 +147,7 @@ const ChatSection = ({
   // console.log(messageData[messageData?.length - 1]);
 
   useEffect(() => {
+    let mounted = true;
     if (!conversationId) {
       setMessageData([]);
       return;
@@ -169,8 +170,6 @@ const ChatSection = ({
       }
       setMessageData(data?.data?.reverse());
     };
-
-    let mounted = true;
 
     if (mounted) {
       fetchMessage();
