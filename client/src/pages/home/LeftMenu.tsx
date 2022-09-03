@@ -98,7 +98,7 @@ const LeftMenu = ({
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [arrivalMessage]);
 
   //set all message to seen
 
@@ -246,12 +246,6 @@ const LeftMenu = ({
       mounted = false;
     };
   }, [deferredText, sortedFriends]);
-
-  const handleFindBlur = (e: any) => {
-    setOpenFriendList(false);
-  };
-
-  console.log(openFriendList);
 
   return (
     <div className="w-[35rem] relative h-screen overflow-hidden overflow-y-auto bg-white dark:bg-gray-900 flex-col left-menu-scroll flex gap-2">

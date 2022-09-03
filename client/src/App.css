@@ -38,3 +38,8 @@
   background-size: cover;
   background-repeat: no-repeat;
 }
+
+.hidden-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0;
+}

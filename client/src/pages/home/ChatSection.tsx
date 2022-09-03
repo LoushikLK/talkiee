@@ -9,7 +9,7 @@ import {
 } from "assets/icons";
 import { Avatar } from "components/core";
 import { getMessagePath, sendMessagePath } from "config/path";
-import React, { useEffect, useRef } from "react";
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import moment from "moment";
@@ -19,6 +19,7 @@ import { v4 } from "uuid";
 import { newMessageAnimation } from "assets/animations";
 import Lottie from "react-lottie";
 import Picker from "emoji-picker-react";
+import { ChatUser } from "components/chat";
 
 type Props = {
   socket: any;
@@ -42,12 +43,14 @@ const ChatSection = ({
     },
   };
 
-  const [messageData, setMessageData] = React.useState<any[]>([]);
-  const [message, setMessage] = React.useState("");
-  const [showEmoji, setShowEmoji] = React.useState(false);
-  const [receiverData, setReceiverData] = React.useState<any>(null);
-  const [receiverOnline, setReceiverOnline] = React.useState(false);
-  const [upcomingMessage, setUpcomingMessage] = React.useState<any>(null);
+  const [messageData, setMessageData] = useState<any[]>([]);
+  const [message, setMessage] = useState("");
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [receiverData, setReceiverData] = useState<any>(null);
+  const [receiverOnline, setReceiverOnline] = useState(false);
+  const [upcomingMessage, setUpcomingMessage] = useState<any>(null);
+  const [chatOption, setChatOptions] = useState(false);
+  const [viewUserProfile, setViewUserProfile] = useState(false);
 
   const user: User = useSelector((state: SELECTOR_TYPE) => state.userDetail);
 
@@ -55,6 +58,24 @@ const ChatSection = ({
 
   const emojiContainer = useRef<any>(null);
   const emojiButtonRef = useRef<any>(null);
+  const optionRef = useRef<HTMLElement>(null);
+  const optionButtonRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: any) => {
+      if (optionButtonRef?.current?.contains(event.target)) {
+        return;
+      }
+      if (optionRef?.current && !optionRef?.current?.contains(event?.target)) {
+        setChatOptions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  });
 
   useEffect(() => {
     if (socket?.current) {
@@ -193,14 +214,16 @@ const ChatSection = ({
         <div
           className={`w-full flex flex-col message-box-chat  px-4 pt-4 relative `}
         >
+          <ChatUser
+            open={viewUserProfile}
+            onClose={() => setViewUserProfile(false)}
+          />
           <div className="w-full h- z-30 flex items-center left-0 justify-between sticky top-0 dark:shadow-gray-100/10  dark:bg-gray-900 bg-white shadow-lg p-4 rounded-2xl ">
             <div className="flex gap-4 items-center w-fit">
               <Avatar
                 name="LL"
                 src={`https://avatars.dicebear.com/api/male/${Math.random()}.svg`}
-                onClick={() => {
-                  console.log("clicked");
-                }}
+                onClick={() => setViewUserProfile(true)}
               />
               <span className="flex flex-col gap-1">
                 <h3 className="font-medium tracking-wide text-lg text-black dark:text-white ">
@@ -236,8 +259,31 @@ const ChatSection = ({
                 <VideoCall className="text-gray-500 text-[1.5rem]  " />
               </span>
 
-              <span className="bg-gray-200/10 h-10 rounded-full cursor-pointer select-none w-10 flex items-center justify-center ">
+              <span
+                className="bg-gray-200/10 h-10 rounded-full cursor-pointer select-none w-10 flex items-center justify-center relative "
+                onClick={() => setChatOptions(!chatOption)}
+                ref={optionButtonRef}
+              >
                 <ThreeDots className="text-gray-500 text-[1.5rem]  " />
+                <span
+                  className={` ${
+                    chatOption ? "scale-100" : "scale-0"
+                  } absolute top-full right-full bg-white h-fit w-fit rounded-lg transition-all ease-in-out duration-300 flex flex-col shadow-xl `}
+                  ref={optionRef}
+                >
+                  <span
+                    className="w-full font-medium tracking-wide whitespace-nowrap  px-4 py-2 hover:bg-gray-100 transition-all ease-in-out duration-300 cursor-pointer  "
+                    onClick={() => setViewUserProfile(true)}
+                  >
+                    View Profile
+                  </span>
+                  <span className="w-full font-medium tracking-wide  px-4 py-2 hover:bg-gray-100 transition-all ease-in-out duration-300">
+                    Clear Chat
+                  </span>
+                  <span className="w-full font-medium tracking-wide  px-4 py-2 hover:bg-gray-100 transition-all ease-in-out duration-300">
+                    Block User
+                  </span>
+                </span>
               </span>
             </div>
           </div>
@@ -259,7 +305,7 @@ const ChatSection = ({
           <div className="flex flex-col h-max overflow-y-auto left-menu-scroll pb-20 ">
             {messageData?.map((message: any, index) => {
               return (
-                <React.Fragment key={index}>
+                <Fragment key={index}>
                   {message?.receiver === user?._id ? (
                     <div
                       className="relative w-full py-4 left-0  gap-4 flex items-start justify-start"
@@ -271,8 +317,8 @@ const ChatSection = ({
                       <div className="w-full flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                           <span
-                            className="max-w-[90%] md:max-w-[70%] w-fit    text-sm text-white rounded-md
-                     bg-cyan-500 font-medium tracking-wide p-4"
+                            className="max-w-[90%] md:max-w-[70%] w-fit py-2 px-4   text-sm text-white 
+                     bg-cyan-500 font-medium tracking-wide rounded-b-2xl rounded-r-2xl"
                           >
                             {message?.message}
                           </span>
@@ -289,7 +335,7 @@ const ChatSection = ({
                       ref={focusField}
                     >
                       <div className="w-full flex flex-col items-end mr-4  gap-2">
-                        <span className="max-w-[90%] md:max-w-[70%] w-fit  text-sm bg-gray-100 rounded-md shadow-lg font-medium tracking-wide p-4">
+                        <span className="max-w-[90%] md:max-w-[70%] w-fit   text-sm bg-gray-100 rounded-b-2xl rounded-l-2xl shadow-lg font-medium tracking-wide py-2 px-4">
                           {message?.message}
                         </span>
                         <span className="flex items-center gap-2">
@@ -305,7 +351,7 @@ const ChatSection = ({
                       </div>
                     </div>
                   )}
-                </React.Fragment>
+                </Fragment>
               );
             })}
           </div>
